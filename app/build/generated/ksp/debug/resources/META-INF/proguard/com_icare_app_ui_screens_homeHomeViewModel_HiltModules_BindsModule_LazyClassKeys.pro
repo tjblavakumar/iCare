@@ -1,0 +1,1 @@
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.home.HomeViewModel

@@ -1,0 +1,5 @@
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.home.HomeViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.home.HomeViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.auth.AuthViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.auth.AuthViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.settings.SettingsViewModel

@@ -1,0 +1,12 @@
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.home.HomeViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.home.HomeViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.auth.AuthViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.auth.AuthViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.settings.SettingsViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.settings.SettingsViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.notifications.NotificationsViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.notifications.NotificationsViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.circle.CircleViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.circle.CircleViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.circle.ContactHistoryViewModel
+-keep,allowobfuscation,allowshrinking class com.icare.app.ui.screens.circle.ContactHistoryViewModel

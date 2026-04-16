@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users collection
+    match /users/{userId} {
+      // Anyone can read user profiles (for contact discovery)
+      allow read: if request.auth != null;
+
+      // Only the user themselves can create/update their own profile
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+
+      // Status history subcollection
+      match /statusHistory/{entryId} {
+        // Connected users can read status history
+        allow read: if request.auth != null;
+        // Only the user can write their own history
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Notifications subcollection
+      match /notifications/{notifId} {
+        // Only the recipient can read their notifications
+        allow read: if request.auth != null && request.auth.uid == userId;
+        // Cloud Functions write notifications (admin SDK bypasses rules)
+        // Users can update their own notifications (mark as read)
+        allow update: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null;
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Connections collection
+    match /connections/{connectionId} {
+      // Both users in a connection can read it
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.userA || request.auth.uid == resource.data.userB);
+
+      // Authenticated users can create connections (send requests)
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.initiatedBy;
+
+      // Both users can update (accept) or delete (reject/remove)
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.userA || request.auth.uid == resource.data.userB);
+      allow delete: if request.auth != null &&
+        (request.auth.uid == resource.data.userA || request.auth.uid == resource.data.userB);
+    }
+  }
+}
