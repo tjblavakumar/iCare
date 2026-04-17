@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.icare.app.ui.theme.DarkCharcoal
 import com.icare.app.ui.theme.MediumGrey
 import com.icare.app.ui.theme.WarmCoral
 import com.icare.app.ui.theme.WarmWhite
@@ -82,7 +83,12 @@ fun OnboardingScreen(
             horizontalArrangement = Arrangement.End
         ) {
             TextButton(onClick = onFinished) {
-                Text("Skip", color = MediumGrey)
+                Text(
+                    text = "Skip",
+                    color = DarkCharcoal,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
 
@@ -95,26 +101,28 @@ fun OnboardingScreen(
             ) {
                 Text(
                     text = pages[page].emoji,
-                    fontSize = 80.sp
+                    fontSize = 96.sp
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
                     text = pages[page].title,
-                    style = MaterialTheme.typography.headlineLarge,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = DarkCharcoal
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
                     text = pages[page].description,
-                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = DarkCharcoal,
+                    lineHeight = 28.sp
                 )
             }
         }
@@ -149,12 +157,13 @@ fun OnboardingScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
+                .height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = WarmCoral)
         ) {
             Text(
                 text = if (currentPage < pages.size - 1) "Next" else "Get Started",
-                fontSize = 16.sp
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold
             )
         }
     }

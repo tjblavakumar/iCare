@@ -1,7 +1,8 @@
 package com.icare.app.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,10 +44,12 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ContactCard(
     contact: ContactWithStatus,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
     onCallClick: () -> Unit,
     onTextClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -66,7 +69,10 @@ fun ContactCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = CardBackground
@@ -100,11 +106,19 @@ fun ContactCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = contact.displayName,
+                    text = contact.effectiveDisplayName,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = CardTextPrimary
                 )
+                
+                if (contact.customDisplayName != null) {
+                    Text(
+                        text = contact.displayName,
+                        fontSize = 12.sp,
+                        color = CardTextSecondary
+                    )
+                }
 
                 if (contact.isInactive) {
                     Text(

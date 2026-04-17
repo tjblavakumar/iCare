@@ -23,13 +23,15 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.icare.app.ui.navigation.Screen
 import com.icare.app.ui.theme.BadRed
-import com.icare.app.ui.theme.WarmCoral
+import com.icare.app.ui.theme.DarkCharcoal
+import com.icare.app.ui.theme.SoothingBlueDark
 import com.icare.app.ui.theme.WarmWhite
 
 data class BottomNavItem(
@@ -54,7 +56,7 @@ fun BottomNavBar(
 
     NavigationBar(
         containerColor = Color.White,
-        contentColor = WarmCoral
+        contentColor = SoothingBlueDark
     ) {
         items.forEach { item ->
             val isSelected = currentRoute == item.route
@@ -87,10 +89,17 @@ fun BottomNavBar(
                         )
                     }
                 },
-                label = { Text(text = item.label) },
+                label = { 
+                    Text(
+                        text = item.label,
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = WarmCoral,
-                    selectedTextColor = WarmCoral,
+                    selectedIconColor = SoothingBlueDark,
+                    selectedTextColor = SoothingBlueDark,
+                    unselectedIconColor = DarkCharcoal,
+                    unselectedTextColor = DarkCharcoal,
                     indicatorColor = WarmWhite
                 )
             )

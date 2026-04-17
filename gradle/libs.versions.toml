@@ -12,6 +12,7 @@ firebaseBom = "33.7.0"
 datastore = "1.1.1"
 accompanist = "0.36.0"
 coroutines = "1.9.0"
+kotlinxSerialization = "1.7.3"
 junit = "4.13.2"
 junitExt = "1.2.1"
 espresso = "3.6.1"
@@ -53,6 +54,7 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 # Coroutines
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -66,3 +68,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
 ksp = { id = "com.google.devtools.ksp", version = "2.0.21-1.0.28" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

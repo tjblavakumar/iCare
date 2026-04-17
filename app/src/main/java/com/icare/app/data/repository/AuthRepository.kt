@@ -94,19 +94,73 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun sendPasswordResetEmail(email: String): Result<Unit> = runCatching {
-        auth.sendPasswordResetEmail(email).await()
+    suspend fun sendPasswordResetOtp(email: String): Result<Unit> = runCatching {
+        val data = hashMapOf("email" to email)
+        try {
+            functions.getHttpsCallable("sendPasswordResetOtp")
+                .call(data)
+                .await()
+        } catch (e: Exception) {
+            val message = when {
+                e.message?.contains("not-found", ignoreCase = true) == true ||
+                e.message?.contains("No account found", ignoreCase = true) == true -> 
+                    "No account found with this email address"
+                e.message?.contains("invalid", ignoreCase = true) == true -> 
+                    "Please enter a valid email address"
+                e.message?.contains("network", ignoreCase = true) == true -> 
+                    "Network error. Please check your connection"
+                else -> e.message ?: "Failed to send reset code"
+            }
+            throw Exception(message)
+        }
+    }
+
+    suspend fun resetPasswordWithOtp(email: String, otp: String, newPassword: String): Result<Unit> = runCatching {
+        val data = hashMapOf(
+            "email" to email,
+            "otp" to otp,
+            "newPassword" to newPassword
+        )
+        try {
+            functions.getHttpsCallable("resetPasswordWithOtp")
+                .call(data)
+                .await()
+        } catch (e: Exception) {
+            val message = when {
+                e.message?.contains("not-found", ignoreCase = true) == true -> 
+                    "No reset code found. Please request a new one."
+                e.message?.contains("expired", ignoreCase = true) == true -> 
+                    "Reset code has expired. Please request a new one."
+                e.message?.contains("Invalid", ignoreCase = true) == true ||
+                e.message?.contains("permission-denied", ignoreCase = true) == true -> 
+                    "Invalid reset code. Please try again."
+                e.message?.contains("Too many", ignoreCase = true) == true -> 
+                    "Too many attempts. Please request a new code."
+                e.message?.contains("4-6 digits", ignoreCase = true) == true -> 
+                    "Passcode must be 4-6 digits"
+                else -> e.message ?: "Failed to reset passcode"
+            }
+            throw Exception(message)
+        }
     }
 
     suspend fun getRecoveryEmailForPhone(phone: String): String? {
-        val normalizedPhone = normalizePhone(phone)
-        val phoneHash = hashString(normalizedPhone)
-        val snapshot = firestore.collection("users")
-            .whereEqualTo("phoneHash", phoneHash)
-            .limit(1)
-            .get()
-            .await()
-        return snapshot.documents.firstOrNull()?.getString("recoveryEmail")
+        return try {
+            val normalizedPhone = normalizePhone(phone)
+            val phoneHash = hashString(normalizedPhone)
+            android.util.Log.d("AuthRepository", "Looking up phone: $normalizedPhone, hash: $phoneHash")
+            val snapshot = firestore.collection("users")
+                .whereEqualTo("phoneHash", phoneHash)
+                .limit(1)
+                .get()
+                .await()
+            val recoveryEmail = snapshot.documents.firstOrNull()?.getString("recoveryEmail")
+            android.util.Log.d("AuthRepository", "Found ${snapshot.documents.size} docs, recoveryEmail: $recoveryEmail")
+            recoveryEmail
+        } catch (e: Exception) {
+            android.util.Log.e("AuthRepository", "Error looking up phone: ${e.message}", e)
+            null
+        }
     }
 
     suspend fun login(emailOrPhone: String, passcode: String): Result<User> = runCatching {

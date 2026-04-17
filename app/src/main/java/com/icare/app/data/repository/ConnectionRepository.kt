@@ -20,11 +20,15 @@ import javax.inject.Singleton
 data class ContactWithStatus(
     val userId: String,
     val displayName: String,
+    val customDisplayName: String? = null,
     val phone: String,
     val email: String,
     val currentStatus: CurrentStatus?,
     val isInactive: Boolean
-)
+) {
+    val effectiveDisplayName: String
+        get() = customDisplayName?.takeIf { it.isNotBlank() } ?: displayName
+}
 
 @Singleton
 class ConnectionRepository @Inject constructor(

@@ -3,12 +3,14 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, Timestamp, FieldValue } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
+const { getAuth } = require("firebase-admin/auth");
 const nodemailer = require("nodemailer");
 
 initializeApp();
 
 const db = getFirestore();
 const messaging = getMessaging();
+const auth = getAuth();
 
 // Configure email transporter (using Gmail SMTP - configure in Firebase environment)
 // Set these in Firebase: firebase functions:config:set email.user="your@gmail.com" email.pass="app-password"
@@ -331,4 +333,155 @@ exports.onStatusChange = onDocumentWritten("users/{userId}", async (event) => {
   );
 
   return null;
+});
+
+/**
+ * Send password reset OTP to user's email
+ * Supports both direct email users and phone users (via recovery email)
+ */
+exports.sendPasswordResetOtp = onCall(async (request) => {
+  const { email } = request.data;
+  
+  if (!email) {
+    throw new HttpsError("invalid-argument", "Email is required");
+  }
+  
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new HttpsError("invalid-argument", "Invalid email format");
+  }
+  
+  const emailLower = email.toLowerCase();
+  let userId = null;
+  
+  // First, try to find user by direct email in Firestore
+  let userSnapshot = await db.collection("users")
+    .where("email", "==", emailLower)
+    .limit(1)
+    .get();
+  
+  if (!userSnapshot.empty) {
+    userId = userSnapshot.docs[0].id;
+  } else {
+    // Try to find user by recovery email (for phone users)
+    userSnapshot = await db.collection("users")
+      .where("recoveryEmail", "==", emailLower)
+      .limit(1)
+      .get();
+    
+    if (!userSnapshot.empty) {
+      userId = userSnapshot.docs[0].id;
+    }
+  }
+  
+  if (!userId) {
+    throw new HttpsError("not-found", "No account found with this email address");
+  }
+  
+  const otp = generateOtp();
+  const expiresAt = Timestamp.fromDate(new Date(Date.now() + 10 * 60 * 1000)); // 10 minutes
+  
+  // Store OTP in Firestore with the userId for later password update
+  const otpRef = db.collection("passwordResetOtps").doc(emailLower);
+  await otpRef.set({
+    otp: otp,
+    email: emailLower,
+    userId: userId,
+    expiresAt: expiresAt,
+    attempts: 0,
+    createdAt: Timestamp.now(),
+  });
+  
+  // Send email
+  try {
+    const transporter = getMailTransporter();
+    
+    await transporter.sendMail({
+      from: '"iCare App" <noreply@icare.app>',
+      to: email,
+      subject: "Reset Your iCare Passcode",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #5B9BD5;">Reset Your Passcode</h2>
+          <p>You requested to reset your iCare passcode. Use this code to continue:</p>
+          <div style="background-color: #f5f5f5; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #5B9BD5;">${otp}</span>
+          </div>
+          <p>This code will expire in <strong>10 minutes</strong>.</p>
+          <p>If you didn't request this reset, please ignore this email and your passcode will remain unchanged.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #888; font-size: 12px;">iCare - Stay connected with the people you love ❤️</p>
+        </div>
+      `,
+    });
+    
+    console.log(`Password reset OTP sent to ${email} for user ${userId}`);
+    return { success: true, message: "Reset code sent successfully" };
+  } catch (error) {
+    console.error("Failed to send password reset email:", error);
+    throw new HttpsError("internal", "Failed to send reset email. Please try again.");
+  }
+});
+
+/**
+ * Verify password reset OTP and update password
+ * Uses stored userId to update password (works for both email and phone users)
+ */
+exports.resetPasswordWithOtp = onCall(async (request) => {
+  const { email, otp, newPassword } = request.data;
+  
+  if (!email || !otp || !newPassword) {
+    throw new HttpsError("invalid-argument", "Email, OTP, and new password are required");
+  }
+  
+  if (newPassword.length < 4 || newPassword.length > 6) {
+    throw new HttpsError("invalid-argument", "Passcode must be 4-6 digits");
+  }
+  
+  const otpRef = db.collection("passwordResetOtps").doc(email.toLowerCase());
+  const otpDoc = await otpRef.get();
+  
+  if (!otpDoc.exists) {
+    throw new HttpsError("not-found", "No reset code found. Please request a new one.");
+  }
+  
+  const otpData = otpDoc.data();
+  
+  // Check if expired
+  if (otpData.expiresAt.toDate() < new Date()) {
+    await otpRef.delete();
+    throw new HttpsError("deadline-exceeded", "Reset code has expired. Please request a new one.");
+  }
+  
+  // Check attempts (max 5)
+  if (otpData.attempts >= 5) {
+    await otpRef.delete();
+    throw new HttpsError("resource-exhausted", "Too many attempts. Please request a new code.");
+  }
+  
+  // Verify OTP
+  if (otpData.otp !== otp) {
+    await otpRef.update({ attempts: FieldValue.increment(1) });
+    throw new HttpsError("permission-denied", "Invalid reset code. Please try again.");
+  }
+  
+  // OTP is valid - update password in Firebase Auth using stored userId
+  try {
+    const userId = otpData.userId;
+    if (!userId) {
+      throw new Error("User ID not found in reset request");
+    }
+    
+    await auth.updateUser(userId, { password: newPassword });
+    
+    // Delete the OTP
+    await otpRef.delete();
+    
+    console.log(`Password reset successful for user ${userId}`);
+    return { success: true, message: "Passcode reset successfully" };
+  } catch (error) {
+    console.error("Failed to reset password:", error);
+    throw new HttpsError("internal", "Failed to reset passcode. Please try again.");
+  }
 });

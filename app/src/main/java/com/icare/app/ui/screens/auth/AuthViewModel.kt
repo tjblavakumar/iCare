@@ -19,7 +19,11 @@ data class AuthUiState(
     // OTP flow states
     val otpSent: Boolean = false,
     val otpVerified: Boolean = false,
-    val pendingSignUpData: PendingSignUpData? = null
+    val pendingSignUpData: PendingSignUpData? = null,
+    // Password reset OTP flow
+    val resetOtpSent: Boolean = false,
+    val resetOtpVerified: Boolean = false,
+    val pendingResetEmail: String? = null
 )
 
 data class PendingSignUpData(
@@ -226,44 +230,116 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun sendPasswordResetEmail(emailOrPhone: String) {
+    fun sendPasswordResetOtp(emailOrPhone: String) {
         if (emailOrPhone.isBlank()) {
-            _uiState.value = _uiState.value.copy(error = "Please enter your email or phone number")
+            _uiState.value = _uiState.value.copy(error = "Please enter your email")
+            return
+        }
+
+        // Only accept email addresses for password reset
+        if (!emailOrPhone.contains("@")) {
+            _uiState.value = _uiState.value.copy(error = "Please enter your email address (not phone number)")
             return
         }
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            val email = if (emailOrPhone.contains("@")) {
-                emailOrPhone
-            } else {
-                val recoveryEmail = authRepository.getRecoveryEmailForPhone(emailOrPhone)
-                if (recoveryEmail.isNullOrBlank()) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = "No recovery email found for this phone number"
-                    )
-                    return@launch
-                }
-                recoveryEmail
+            try {
+                // Cloud function will look up user by email OR recoveryEmail
+                authRepository.sendPasswordResetOtp(emailOrPhone)
+                    .onSuccess {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            resetOtpSent = true,
+                            pendingResetEmail = emailOrPhone
+                        )
+                    }
+                    .onFailure { e ->
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = e.message ?: "Failed to send reset code"
+                        )
+                    }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message ?: "An error occurred. Please try again."
+                )
             }
+        }
+    }
 
-            authRepository.sendPasswordResetEmail(email)
+    fun verifyResetOtpAndChangePassword(otp: String, newPassword: String, confirmPassword: String) {
+        val email = _uiState.value.pendingResetEmail
+        if (email.isNullOrBlank()) {
+            _uiState.value = _uiState.value.copy(error = "No pending reset request")
+            return
+        }
+
+        if (otp.length != 4) {
+            _uiState.value = _uiState.value.copy(error = "Please enter a 4-digit code")
+            return
+        }
+
+        if (newPassword.length < 4 || newPassword.length > 6) {
+            _uiState.value = _uiState.value.copy(error = "Passcode must be 4-6 digits")
+            return
+        }
+
+        if (newPassword != confirmPassword) {
+            _uiState.value = _uiState.value.copy(error = "Passcodes don't match")
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+            authRepository.resetPasswordWithOtp(email, otp, newPassword)
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        resetEmailSent = true,
-                        recoveryEmail = email
+                        resetOtpVerified = true
                     )
                 }
                 .onFailure { e ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to send reset email"
+                        error = e.message ?: "Failed to reset passcode"
                     )
                 }
         }
+    }
+
+    fun resendResetOtp() {
+        val email = _uiState.value.pendingResetEmail ?: return
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+            authRepository.sendPasswordResetOtp(email)
+                .onSuccess {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
+                .onFailure { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to resend code"
+                    )
+                }
+        }
+    }
+
+    fun cancelPasswordReset() {
+        _uiState.value = _uiState.value.copy(
+            resetOtpSent = false,
+            resetOtpVerified = false,
+            pendingResetEmail = null,
+            error = null
+        )
     }
 
     fun clearError() {

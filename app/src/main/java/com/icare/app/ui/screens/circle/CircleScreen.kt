@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.icare.app.ui.components.ContactCard
+import com.icare.app.ui.components.EditNicknameDialog
 import com.icare.app.ui.theme.WarmCoral
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,6 +124,7 @@ fun CircleScreen(
                         ContactCard(
                             contact = contact,
                             onClick = { onContactClick(contact.userId) },
+                            onLongClick = { viewModel.startEditingNickname(contact) },
                             onCallClick = {
                                 val phoneNumber = contact.phone.ifEmpty { contact.email }
                                 if (phoneNumber.isNotEmpty()) {
@@ -144,5 +146,13 @@ fun CircleScreen(
                 }
             }
         }
+    }
+
+    uiState.editingContact?.let { contact ->
+        EditNicknameDialog(
+            contact = contact,
+            onDismiss = { viewModel.cancelEditingNickname() },
+            onSave = { nickname -> viewModel.saveNickname(contact.userId, nickname) }
+        )
     }
 }
