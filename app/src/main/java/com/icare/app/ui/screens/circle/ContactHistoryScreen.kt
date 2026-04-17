@@ -37,6 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.icare.app.data.model.StatusEntry
+import com.icare.app.ui.theme.CardBackground
+import com.icare.app.ui.theme.CardTextPrimary
+import com.icare.app.ui.theme.CardTextSecondary
 import com.icare.app.ui.theme.WarmCoral
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -130,18 +133,18 @@ fun ContactHistoryScreen(
 private fun HistoryEntryCard(entry: StatusEntry) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = entry.emoji,
-                fontSize = 28.sp
+                fontSize = 32.sp
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -149,12 +152,14 @@ private fun HistoryEntryCard(entry: StatusEntry) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = entry.label,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = CardTextPrimary
                 )
                 Text(
                     text = formatTime(entry.timestamp),
-                    style = MaterialTheme.typography.labelSmall
+                    fontSize = 13.sp,
+                    color = CardTextSecondary
                 )
             }
         }

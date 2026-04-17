@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,16 +43,29 @@ import com.icare.app.ui.theme.WarmCoral
 @Composable
 fun CircleScreen(
     onContactClick: (String) -> Unit,
+    onAddContactClick: () -> Unit,
     viewModel: CircleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    // Auto-refresh when screen becomes visible
+    LaunchedEffect(Unit) {
+        viewModel.loadContacts()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text("My Circle", color = Color.White) },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = WarmCoral),
             actions = {
+                IconButton(onClick = onAddContactClick) {
+                    Icon(
+                        imageVector = Icons.Default.PersonAdd,
+                        contentDescription = "Add Contact",
+                        tint = Color.White
+                    )
+                }
                 IconButton(onClick = { viewModel.loadContacts() }) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -109,14 +124,20 @@ fun CircleScreen(
                             contact = contact,
                             onClick = { onContactClick(contact.userId) },
                             onCallClick = {
-                                val intent = Intent(Intent.ACTION_DIAL)
-                                intent.data = Uri.parse("tel:")
-                                context.startActivity(intent)
+                                val phoneNumber = contact.phone.ifEmpty { contact.email }
+                                if (phoneNumber.isNotEmpty()) {
+                                    val intent = Intent(Intent.ACTION_DIAL)
+                                    intent.data = Uri.parse("tel:$phoneNumber")
+                                    context.startActivity(intent)
+                                }
                             },
                             onTextClick = {
-                                val intent = Intent(Intent.ACTION_VIEW)
-                                intent.data = Uri.parse("sms:")
-                                context.startActivity(intent)
+                                val phoneNumber = contact.phone.ifEmpty { contact.email }
+                                if (phoneNumber.isNotEmpty()) {
+                                    val intent = Intent(Intent.ACTION_SENDTO)
+                                    intent.data = Uri.parse("smsto:$phoneNumber")
+                                    context.startActivity(intent)
+                                }
                             }
                         )
                     }

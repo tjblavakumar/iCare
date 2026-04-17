@@ -34,8 +34,11 @@ data class PendingRequestsUiState(
 
 data class AddContactUiState(
     val searchResults: List<User> = emptyList(),
+    val discoveredContacts: List<User> = emptyList(),
     val isSearching: Boolean = false,
-    val message: String? = null
+    val isDiscovering: Boolean = false,
+    val message: String? = null,
+    val sentRequestUserIds: Set<String> = emptySet()
 )
 
 @HiltViewModel
@@ -65,7 +68,19 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             _settingsState.value = _settingsState.value.copy(isLoading = true)
             try {
-                val user = authRepository.getCurrentUserData()
+                var user = authRepository.getCurrentUserData()
+                
+                // Generate iCareId for existing users who don't have one
+                if (user != null && user.iCareId.isEmpty()) {
+                    val email = user.email.ifEmpty { user.recoveryEmail }
+                    if (email.isNotEmpty()) {
+                        authRepository.generateICareId(email, user.uid)
+                            .onSuccess { newId ->
+                                user = user?.copy(iCareId = newId)
+                            }
+                    }
+                }
+                
                 _settingsState.value = _settingsState.value.copy(
                     currentUser = user,
                     isLoading = false
@@ -98,13 +113,18 @@ class SettingsViewModel @Inject constructor(
 
     fun deleteAccount(onComplete: () -> Unit) {
         viewModelScope.launch {
-            authRepository.deleteAccount()
-                .onSuccess { onComplete() }
-                .onFailure { e ->
-                    _settingsState.value = _settingsState.value.copy(
-                        message = "Failed to delete: ${e.message}"
-                    )
-                }
+            _settingsState.value = _settingsState.value.copy(isLoading = true)
+            val result = authRepository.deleteAccount()
+            _settingsState.value = _settingsState.value.copy(isLoading = false)
+            
+            result.onSuccess { 
+                authRepository.logout()
+                onComplete() 
+            }.onFailure { e ->
+                _settingsState.value = _settingsState.value.copy(
+                    message = "Failed to delete: ${e.message}"
+                )
+            }
         }
     }
 
@@ -220,12 +240,13 @@ class SettingsViewModel @Inject constructor(
             connectionRepository.sendConnectionRequest(targetUserId)
                 .onSuccess {
                     _addContactState.value = _addContactState.value.copy(
-                        message = "Request sent!"
+                        message = "Request sent!",
+                        sentRequestUserIds = _addContactState.value.sentRequestUserIds + targetUserId
                     )
                 }
                 .onFailure { e ->
                     _addContactState.value = _addContactState.value.copy(
-                        message = e.message
+                        message = e.message ?: "Failed to send request"
                     )
                 }
         }
@@ -237,5 +258,24 @@ class SettingsViewModel @Inject constructor(
 
     fun clearAddContactMessage() {
         _addContactState.value = _addContactState.value.copy(message = null)
+    }
+
+    fun discoverContactsFromPhone(contentResolver: android.content.ContentResolver) {
+        viewModelScope.launch {
+            _addContactState.value = _addContactState.value.copy(isDiscovering = true)
+            try {
+                val discovered = contactDiscoveryRepository.discoverContactsFromPhone(contentResolver)
+                _addContactState.value = _addContactState.value.copy(
+                    discoveredContacts = discovered,
+                    isDiscovering = false,
+                    message = if (discovered.isEmpty()) "No contacts found on iCare" else "${discovered.size} contact(s) found on iCare!"
+                )
+            } catch (e: Exception) {
+                _addContactState.value = _addContactState.value.copy(
+                    isDiscovering = false,
+                    message = e.message ?: "Failed to discover contacts"
+                )
+            }
+        }
     }
 }

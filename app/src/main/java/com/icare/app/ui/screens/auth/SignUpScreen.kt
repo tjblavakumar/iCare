@@ -56,6 +56,7 @@ import kotlinx.coroutines.launch
 fun SignUpScreen(
     onSignUpSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToOtp: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -69,6 +70,13 @@ fun SignUpScreen(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    // Navigate to OTP screen when OTP is sent
+    LaunchedEffect(uiState.otpSent) {
+        if (uiState.otpSent) {
+            onNavigateToOtp()
+        }
+    }
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {

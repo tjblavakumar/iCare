@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -55,7 +54,10 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "How are you feeling?",
+            text = if (uiState.userName.isNotEmpty()) 
+                "How are you feeling, ${uiState.userName}?" 
+            else 
+                "How are you feeling?",
             style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground
@@ -121,32 +123,18 @@ fun HomeScreen(
         if (uiState.currentStatus != null) {
             val status = uiState.currentStatus!!
             Text(
-                text = "Your current status: ${status.emoji} ${status.label}",
+                text = "You're feeling ${status.emoji} ${status.label}",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
 
             status.timestamp?.let { ts ->
                 Text(
-                    text = "Updated ${formatStatusTimestamp(ts)}",
+                    text = "as of ${formatStatusTimestamp(ts)}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MediumGrey,
                     textAlign = TextAlign.Center
                 )
-            }
-        }
-
-        // Snackbar for update messages
-        if (uiState.updateMessage != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Snackbar(
-                action = {
-                    TextButton(onClick = { viewModel.clearMessage() }) {
-                        Text("OK")
-                    }
-                }
-            ) {
-                Text(uiState.updateMessage!!)
             }
         }
     }

@@ -39,6 +39,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.icare.app.ui.theme.CardBackground
+import com.icare.app.ui.theme.CardTextPrimary
+import com.icare.app.ui.theme.CardTextSecondary
 import com.icare.app.ui.theme.WarmCoral
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,7 +109,7 @@ fun PendingRequestsScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = CardBackground),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
@@ -116,16 +119,18 @@ fun PendingRequestsScreen(
                             ) {
                                 Text(
                                     text = user.displayName,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Medium
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = CardTextPrimary
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = "${user.email.ifEmpty { user.phone }} wants to connect",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    fontSize = 14.sp,
+                                    color = CardTextSecondary
                                 )
 
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
 
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -135,14 +140,14 @@ fun PendingRequestsScreen(
                                         colors = ButtonDefaults.buttonColors(containerColor = WarmCoral),
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("Accept")
+                                        Text("Accept", fontSize = 16.sp)
                                     }
 
                                     OutlinedButton(
                                         onClick = { viewModel.rejectRequest(connection.id) },
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        Text("Reject")
+                                        Text("Reject", fontSize = 16.sp)
                                     }
                                 }
                             }

@@ -3,8 +3,18 @@ package com.icare.app.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.icare.app.di.dataStore
+import kotlinx.coroutines.launch
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -12,15 +22,19 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.icare.app.ui.MainViewModel
 import com.icare.app.ui.components.BottomNavBar
+import com.icare.app.ui.screens.auth.AuthViewModel
 import com.icare.app.ui.screens.auth.ForgotPasswordScreen
 import com.icare.app.ui.screens.auth.LoginScreen
+import com.icare.app.ui.screens.auth.OtpVerificationScreen
 import com.icare.app.ui.screens.auth.SignUpScreen
 import com.icare.app.ui.screens.circle.CircleScreen
 import com.icare.app.ui.screens.circle.ContactHistoryScreen
 import com.icare.app.ui.screens.home.HomeScreen
 import com.icare.app.ui.screens.notifications.NotificationsScreen
 import com.icare.app.ui.screens.onboarding.OnboardingScreen
+import com.icare.app.ui.screens.permissions.PermissionsScreen
 import com.icare.app.ui.screens.settings.AddContactScreen
 import com.icare.app.ui.screens.settings.ManageContactsScreen
 import com.icare.app.ui.screens.settings.PendingRequestsScreen
@@ -29,10 +43,19 @@ import com.icare.app.ui.screens.settings.SettingsScreen
 @Composable
 fun ICareNavigation(
     startDestination: String,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val pendingRequestsCount by mainViewModel.pendingRequestsCount.collectAsState()
+
+    // Refresh pending count when navigating to main screens
+    LaunchedEffect(currentRoute) {
+        if (currentRoute in listOf(Screen.Home.route, Screen.Circle.route, Screen.Notifications.route, Screen.Settings.route)) {
+            mainViewModel.loadPendingRequestsCount()
+        }
+    }
 
     val showBottomBar = currentRoute in listOf(
         Screen.Home.route,
@@ -52,7 +75,8 @@ fun ICareNavigation(
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
+                    pendingRequestsCount = pendingRequestsCount
                 )
             }
         }
@@ -88,15 +112,62 @@ fun ICareNavigation(
                 )
             }
 
-            composable(Screen.SignUp.route) {
+            composable(Screen.SignUp.route) { backStackEntry ->
+                // Get parent entry to share ViewModel with OTP screen
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(Screen.SignUp.route)
+                }
+                val sharedViewModel: AuthViewModel = hiltViewModel(parentEntry)
+                
                 SignUpScreen(
                     onSignUpSuccess = {
-                        navController.navigate(Screen.Home.route) {
+                        navController.navigate(Screen.Permissions.route) {
                             popUpTo(Screen.SignUp.route) { inclusive = true }
                         }
                     },
                     onNavigateToLogin = {
                         navController.navigate(Screen.Login.route)
+                    },
+                    onNavigateToOtp = {
+                        navController.navigate(Screen.OtpVerification.route)
+                    },
+                    viewModel = sharedViewModel
+                )
+            }
+
+            composable(Screen.OtpVerification.route) {
+                // Get the SignUp screen's back stack entry to share ViewModel
+                val parentEntry = remember {
+                    navController.getBackStackEntry(Screen.SignUp.route)
+                }
+                val sharedViewModel: AuthViewModel = hiltViewModel(parentEntry)
+                
+                OtpVerificationScreen(
+                    onVerificationSuccess = {
+                        navController.navigate(Screen.Permissions.route) {
+                            popUpTo(Screen.SignUp.route) { inclusive = true }
+                        }
+                    },
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    viewModel = sharedViewModel
+                )
+            }
+
+            composable(Screen.Permissions.route) {
+                val context = LocalContext.current
+                val scope = rememberCoroutineScope()
+                PermissionsScreen(
+                    onComplete = {
+                        scope.launch {
+                            context.dataStore.edit { prefs ->
+                                prefs[booleanPreferencesKey("permissions_shown")] = true
+                            }
+                        }
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Permissions.route) { inclusive = true }
+                        }
                     }
                 )
             }
@@ -115,6 +186,9 @@ fun ICareNavigation(
                 CircleScreen(
                     onContactClick = { contactId ->
                         navController.navigate(Screen.ContactHistory.createRoute(contactId))
+                    },
+                    onAddContactClick = {
+                        navController.navigate(Screen.AddContact.route)
                     }
                 )
             }

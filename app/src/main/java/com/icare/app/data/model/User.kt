@@ -1,9 +1,12 @@
 package com.icare.app.data.model
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.PropertyName
 
 data class User(
     val uid: String = "",
+    @get:PropertyName("iCareId") @set:PropertyName("iCareId")
+    var iCareId: String = "",  // Unique shareable ID like "iCare.1234.joh"
     val displayName: String = "",
     val email: String = "",
     val phone: String = "",
@@ -13,6 +16,7 @@ data class User(
     val fcmToken: String = "",
     val photoUrl: String = "",
     val authProvider: String = "email",
+    val emailVerified: Boolean = false,
     val currentStatus: CurrentStatus? = null,
     val customEmojis: List<String> = emptyList(),
     val createdAt: Timestamp? = null,

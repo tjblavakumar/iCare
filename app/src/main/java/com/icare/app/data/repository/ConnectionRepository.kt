@@ -20,6 +20,8 @@ import javax.inject.Singleton
 data class ContactWithStatus(
     val userId: String,
     val displayName: String,
+    val phone: String,
+    val email: String,
     val currentStatus: CurrentStatus?,
     val isInactive: Boolean
 )
@@ -48,6 +50,10 @@ class ConnectionRepository @Inject constructor(
             throw Exception("Connection already exists")
         }
 
+        // Get current user's display name
+        val currentUserDoc = firestore.collection("users").document(uid).get().await()
+        val currentUserName = currentUserDoc.getString("displayName") ?: "Someone"
+
         val connection = Connection(
             userA = uid,
             userB = targetUserId,
@@ -58,6 +64,22 @@ class ConnectionRepository @Inject constructor(
         )
 
         firestore.collection("connections").add(connection).await()
+
+        // Create notification for the target user
+        val notification = hashMapOf(
+            "type" to "connection_request",
+            "fromUserId" to uid,
+            "fromDisplayName" to currentUserName,
+            "emoji" to "👋",
+            "label" to "wants to connect",
+            "message" to "$currentUserName wants to add you to their circle",
+            "timestamp" to Timestamp.now(),
+            "read" to false
+        )
+
+        firestore.collection("users").document(targetUserId)
+            .collection("notifications")
+            .add(notification).await()
     }
 
     suspend fun acceptConnection(connectionId: String): Result<Unit> = runCatching {
@@ -177,6 +199,8 @@ class ConnectionRepository @Inject constructor(
             ContactWithStatus(
                 userId = otherUid,
                 displayName = user.displayName,
+                phone = user.phone,
+                email = user.email,
                 currentStatus = status,
                 isInactive = isInactive
             )

@@ -15,7 +15,19 @@ data class AuthUiState(
     val error: String? = null,
     val isSuccess: Boolean = false,
     val resetEmailSent: Boolean = false,
-    val recoveryEmail: String? = null
+    val recoveryEmail: String? = null,
+    // OTP flow states
+    val otpSent: Boolean = false,
+    val otpVerified: Boolean = false,
+    val pendingSignUpData: PendingSignUpData? = null
+)
+
+data class PendingSignUpData(
+    val emailOrPhone: String,
+    val displayName: String,
+    val passcode: String,
+    val recoveryEmail: String,
+    val verificationEmail: String  // Email where OTP was sent
 )
 
 @HiltViewModel
@@ -85,19 +97,117 @@ class AuthViewModel @Inject constructor(
             return
         }
 
+        // Determine which email to verify
+        val verificationEmail = if (isPhoneUser) recoveryEmail else emailOrPhone
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            authRepository.signUp(emailOrPhone, passcode, displayName, recoveryEmail)
+            
+            // Send OTP to the verification email
+            authRepository.sendOtp(verificationEmail, displayName)
                 .onSuccess {
-                    _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        otpSent = true,
+                        pendingSignUpData = PendingSignUpData(
+                            emailOrPhone = emailOrPhone,
+                            displayName = displayName,
+                            passcode = passcode,
+                            recoveryEmail = recoveryEmail,
+                            verificationEmail = verificationEmail
+                        )
+                    )
                 }
                 .onFailure { e ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = e.message ?: "Sign up failed"
+                        error = e.message ?: "Failed to send verification code"
                     )
                 }
         }
+    }
+
+    fun verifyOtpAndSignUp(otp: String) {
+        val pendingData = _uiState.value.pendingSignUpData
+        if (pendingData == null) {
+            _uiState.value = _uiState.value.copy(error = "No pending sign-up data")
+            return
+        }
+
+        if (otp.length != 4) {
+            _uiState.value = _uiState.value.copy(error = "Please enter a 4-digit code")
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            
+            // Verify OTP
+            authRepository.verifyOtp(pendingData.verificationEmail, otp)
+                .onSuccess { verified ->
+                    if (verified) {
+                        // OTP verified, now create the account
+                        authRepository.signUpAfterOtpVerification(
+                            pendingData.emailOrPhone,
+                            pendingData.passcode,
+                            pendingData.displayName,
+                            pendingData.recoveryEmail
+                        ).onSuccess {
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                otpVerified = true,
+                                isSuccess = true
+                            )
+                        }.onFailure { e ->
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                error = e.message ?: "Failed to create account"
+                            )
+                        }
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = "Invalid verification code"
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = e.message ?: "Verification failed"
+                    )
+                }
+        }
+    }
+
+    fun resendOtp() {
+        val pendingData = _uiState.value.pendingSignUpData ?: return
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            
+            authRepository.sendOtp(pendingData.verificationEmail, pendingData.displayName)
+                .onSuccess {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
+                .onFailure { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to resend code"
+                    )
+                }
+        }
+    }
+
+    fun cancelOtpVerification() {
+        _uiState.value = _uiState.value.copy(
+            otpSent = false,
+            pendingSignUpData = null,
+            error = null
+        )
     }
 
     fun signInWithGoogle(idToken: String) {

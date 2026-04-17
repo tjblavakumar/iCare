@@ -6,67 +6,70 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-val Typography = Typography(
+// Text size scale factors
+enum class TextSizeScale(val factor: Float, val label: String) {
+    NORMAL(1.0f, "Normal"),
+    LARGE(1.2f, "Large"),
+    EXTRA_LARGE(1.4f, "Extra Large")
+}
+
+// Create typography with scale factor
+fun createTypography(scale: Float = 1.0f) = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
-        fontSize = 32.sp,
-        lineHeight = 40.sp,
-        color = DarkCharcoal
+        fontSize = (34 * scale).sp,
+        lineHeight = (42 * scale).sp
     ),
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
-        fontSize = 28.sp,
-        lineHeight = 36.sp,
-        color = DarkCharcoal
+        fontSize = (30 * scale).sp,
+        lineHeight = (38 * scale).sp
     ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 24.sp,
-        lineHeight = 32.sp,
-        color = DarkCharcoal
+        fontSize = (26 * scale).sp,
+        lineHeight = (34 * scale).sp
     ),
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp,
-        lineHeight = 28.sp,
-        color = DarkCharcoal
+        fontSize = (22 * scale).sp,
+        lineHeight = (30 * scale).sp
     ),
     titleMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        color = DarkCharcoal
+        fontSize = (18 * scale).sp,
+        lineHeight = (26 * scale).sp
     ),
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        color = DarkCharcoal
+        fontSize = (18 * scale).sp,
+        lineHeight = (26 * scale).sp
     ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        color = DarkCharcoal
+        fontSize = (16 * scale).sp,
+        lineHeight = (24 * scale).sp
     ),
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
-        lineHeight = 20.sp
+        fontSize = (16 * scale).sp,
+        lineHeight = (22 * scale).sp
     ),
     labelSmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        color = MediumGrey
+        fontSize = (14 * scale).sp,
+        lineHeight = (20 * scale).sp
     )
 )
+
+// Default typography (larger than before)
+val Typography = createTypography(1.0f)

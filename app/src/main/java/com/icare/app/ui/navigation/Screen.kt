@@ -1,10 +1,12 @@
 package com.icare.app.ui.navigation
 
 sealed class Screen(val route: String) {
-    data object Onboarding : Screen("onboarding")
-    data object Login : Screen("login")
-    data object SignUp : Screen("signup")
-    data object ForgotPassword : Screen("forgot_password")
+    object Onboarding : Screen("onboarding")
+    object Permissions : Screen("permissions")
+    object Login : Screen("login")
+    object SignUp : Screen("signup")
+    object OtpVerification : Screen("otp_verification")
+    object ForgotPassword : Screen("forgot_password")
     data object Home : Screen("home")
     data object Circle : Screen("circle")
     data object Notifications : Screen("notifications")

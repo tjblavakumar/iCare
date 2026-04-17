@@ -4,9 +4,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.icare.app.data.model.AppNotification
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,7 +42,25 @@ class NotificationRepository @Inject constructor(
                     doc.toObject(AppNotification::class.java)?.copy(id = doc.id)
                 } ?: emptyList()
 
-                trySend(notifications)
+                // Fetch missing display names
+                CoroutineScope(Dispatchers.IO).launch {
+                    val enrichedNotifications = notifications.map { notification ->
+                        if (notification.fromDisplayName.isEmpty() && notification.fromUserId.isNotEmpty()) {
+                            try {
+                                val userDoc = firestore.collection("users")
+                                    .document(notification.fromUserId)
+                                    .get().await()
+                                val displayName = userDoc.getString("displayName") ?: "Someone"
+                                notification.copy(fromDisplayName = displayName)
+                            } catch (e: Exception) {
+                                notification
+                            }
+                        } else {
+                            notification
+                        }
+                    }
+                    trySend(enrichedNotifications)
+                }
             }
 
         awaitClose { listener.remove() }
@@ -61,5 +82,27 @@ class NotificationRepository @Inject constructor(
             .whereEqualTo("read", false)
             .get().await()
         return snapshot.size()
+    }
+
+    suspend fun deleteNotification(notificationId: String): Result<Unit> = runCatching {
+        if (uid.isEmpty()) throw Exception("Not logged in")
+        firestore.collection("users").document(uid)
+            .collection("notifications")
+            .document(notificationId)
+            .delete()
+            .await()
+    }
+
+    suspend fun deleteAllNotifications(): Result<Unit> = runCatching {
+        if (uid.isEmpty()) throw Exception("Not logged in")
+        val snapshot = firestore.collection("users").document(uid)
+            .collection("notifications")
+            .get().await()
+        
+        val batch = firestore.batch()
+        snapshot.documents.forEach { doc ->
+            batch.delete(doc.reference)
+        }
+        batch.commit().await()
     }
 }

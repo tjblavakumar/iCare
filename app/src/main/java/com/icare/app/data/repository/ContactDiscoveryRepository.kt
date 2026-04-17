@@ -19,26 +19,112 @@ class ContactDiscoveryRepository @Inject constructor(
 ) {
     suspend fun searchByEmailOrPhone(query: String): List<User> {
         val currentUid = auth.currentUser?.uid ?: return emptyList()
+        val trimmedQuery = query.trim()
+        
+        if (trimmedQuery.isEmpty()) return emptyList()
 
         val results = mutableListOf<User>()
 
-        if (query.contains("@")) {
-            val emailHash = hashString(query.trim().lowercase())
-            val snapshot = firestore.collection("users")
-                .whereEqualTo("emailHash", emailHash)
+        // Check if it's an iCareID (format: iCare.XXXX.abc)
+        if (trimmedQuery.startsWith("iCare.", ignoreCase = true) || 
+            trimmedQuery.startsWith("icare.", ignoreCase = true)) {
+            // Try exact match on iCareId field
+            var snapshot = firestore.collection("users")
+                .whereEqualTo("iCareId", trimmedQuery)
+                .get().await()
+            
+            // Try with proper casing if no results
+            if (snapshot.isEmpty) {
+                snapshot = firestore.collection("users")
+                    .whereEqualTo("iCareId", "iCare" + trimmedQuery.substring(5))
+                    .get().await()
+            }
+            
+            // Also try icareId (lowercase) for legacy data
+            if (snapshot.isEmpty) {
+                snapshot = firestore.collection("users")
+                    .whereEqualTo("icareId", trimmedQuery)
+                    .get().await()
+            }
+            
+            results.addAll(snapshot.documents.mapNotNull { doc ->
+                doc.toObject(User::class.java)?.takeIf { it.uid != currentUid }
+            })
+        } else if (trimmedQuery.contains("@")) {
+            // Search by email - try multiple variations
+            val emailLower = trimmedQuery.lowercase()
+            val emailOriginal = trimmedQuery
+            
+            // Try lowercase
+            var snapshot = firestore.collection("users")
+                .whereEqualTo("email", emailLower)
                 .get().await()
             results.addAll(snapshot.documents.mapNotNull { doc ->
                 doc.toObject(User::class.java)?.takeIf { it.uid != currentUid }
             })
+            
+            // Try original case if no results
+            if (results.isEmpty() && emailOriginal != emailLower) {
+                snapshot = firestore.collection("users")
+                    .whereEqualTo("email", emailOriginal)
+                    .get().await()
+                results.addAll(snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(User::class.java)?.takeIf { it.uid != currentUid }
+                })
+            }
+            
+            // Fallback to hash match
+            if (results.isEmpty()) {
+                val emailHash = hashString(emailLower)
+                snapshot = firestore.collection("users")
+                    .whereEqualTo("emailHash", emailHash)
+                    .get().await()
+                results.addAll(snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(User::class.java)?.takeIf { it.uid != currentUid }
+                })
+            }
         } else {
-            val normalizedPhone = query.replace(Regex("[^0-9+]"), "")
-            val phoneHash = hashString(normalizedPhone)
-            val snapshot = firestore.collection("users")
-                .whereEqualTo("phoneHash", phoneHash)
+            // Search by phone - try multiple variations
+            val normalizedPhone = trimmedQuery.replace(Regex("[^0-9+]"), "")
+            
+            // Try direct match
+            var snapshot = firestore.collection("users")
+                .whereEqualTo("phone", normalizedPhone)
                 .get().await()
             results.addAll(snapshot.documents.mapNotNull { doc ->
                 doc.toObject(User::class.java)?.takeIf { it.uid != currentUid }
             })
+            
+            // Try with + prefix if not present
+            if (results.isEmpty() && !normalizedPhone.startsWith("+")) {
+                snapshot = firestore.collection("users")
+                    .whereEqualTo("phone", "+$normalizedPhone")
+                    .get().await()
+                results.addAll(snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(User::class.java)?.takeIf { it.uid != currentUid }
+                })
+            }
+            
+            // Try without + prefix if present
+            if (results.isEmpty() && normalizedPhone.startsWith("+")) {
+                snapshot = firestore.collection("users")
+                    .whereEqualTo("phone", normalizedPhone.substring(1))
+                    .get().await()
+                results.addAll(snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(User::class.java)?.takeIf { it.uid != currentUid }
+                })
+            }
+            
+            // Fallback to hash match
+            if (results.isEmpty()) {
+                val phoneHash = hashString(normalizedPhone)
+                snapshot = firestore.collection("users")
+                    .whereEqualTo("phoneHash", phoneHash)
+                    .get().await()
+                results.addAll(snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(User::class.java)?.takeIf { it.uid != currentUid }
+                })
+            }
         }
 
         return results

@@ -3,3 +3,6 @@ public facing name for project
 
 google web client ID
 640303237890-98qqehfmj4vou9kghu1rij1j25cuvnhd.apps.googleusercontent.com
+
+EMAIL_USER=tjblavakumar@gmail.com
+EMAIL_PASS="zbxy rzcv iyzi yacj"

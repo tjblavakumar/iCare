@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.icare.app.data.model.CurrentStatus
 import com.icare.app.data.model.EmojiStatus
+import com.icare.app.data.repository.AuthRepository
 import com.icare.app.data.repository.StatusRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,7 @@ import javax.inject.Inject
 
 data class HomeUiState(
     val currentStatus: CurrentStatus? = null,
+    val userName: String = "",
     val isUpdating: Boolean = false,
     val showMoreEmojis: Boolean = false,
     val updateMessage: String? = null
@@ -21,14 +23,26 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val statusRepository: StatusRepository
+    private val statusRepository: StatusRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        loadUserName()
         observeStatus()
+    }
+
+    private fun loadUserName() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUserData()
+            user?.let {
+                val firstName = it.displayName.split(" ").firstOrNull() ?: it.displayName
+                _uiState.value = _uiState.value.copy(userName = firstName)
+            }
+        }
     }
 
     private fun observeStatus() {

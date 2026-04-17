@@ -16,12 +16,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -38,9 +44,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.icare.app.data.model.AppNotification
 import com.icare.app.ui.theme.BadRed
+import com.icare.app.ui.theme.CardBackground
+import com.icare.app.ui.theme.CardTextPrimary
+import com.icare.app.ui.theme.CardTextSecondary
 import com.icare.app.ui.theme.LowAmber
 import com.icare.app.ui.theme.WarmCoral
-import com.icare.app.ui.theme.WarmWhite
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -56,8 +64,23 @@ fun NotificationsScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text("Notifications", color = Color.White) },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = WarmCoral)
+            title = { Text("Alerts", color = Color.White) },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = WarmCoral),
+            actions = {
+                if (uiState.notifications.isNotEmpty()) {
+                    TextButton(
+                        onClick = { viewModel.deleteAllNotifications() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteSweep,
+                            contentDescription = "Clear All",
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Clear All", color = Color.White)
+                    }
+                }
+            }
         )
 
         when {
@@ -103,7 +126,8 @@ fun NotificationsScreen(
                     items(uiState.notifications, key = { it.id }) { notification ->
                         NotificationCard(
                             notification = notification,
-                            onRead = { viewModel.markAsRead(notification.id) }
+                            onRead = { viewModel.markAsRead(notification.id) },
+                            onDelete = { viewModel.deleteNotification(notification.id) }
                         )
                     }
                 }
@@ -115,58 +139,72 @@ fun NotificationsScreen(
 @Composable
 private fun NotificationCard(
     notification: AppNotification,
-    onRead: () -> Unit
+    onRead: () -> Unit,
+    onDelete: () -> Unit
 ) {
-    val bgColor = if (notification.read) Color.White else WarmWhite
+    val isAccountDeleted = notification.type == "account_deleted"
+    val isConnectionRequest = notification.type == "connection_request"
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = bgColor),
+        colors = CardDefaults.cardColors(containerColor = CardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = if (notification.read) 1.dp else 3.dp),
         onClick = { if (!notification.read) onRead() }
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Unread indicator
             if (!notification.read) {
                 Box(
                     modifier = Modifier
-                        .size(8.dp)
+                        .size(10.dp)
                         .clip(CircleShape)
-                        .background(WarmCoral)
+                        .background(if (isAccountDeleted) BadRed else WarmCoral)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }
 
             Text(
-                text = notification.emoji,
-                fontSize = 32.sp
+                text = notification.emoji.ifEmpty { if (isAccountDeleted || isConnectionRequest) "👋" else "😊" },
+                fontSize = 36.sp
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "${notification.fromDisplayName} is ${notification.label.lowercase()}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (notification.read) FontWeight.Normal else FontWeight.SemiBold
+                    text = when {
+                        isAccountDeleted -> notification.message.ifEmpty { 
+                            "${notification.fromDisplayName.ifEmpty { "Someone" }} has left iCare" 
+                        }
+                        isConnectionRequest -> notification.message.ifEmpty {
+                            "${notification.fromDisplayName.ifEmpty { "Someone" }} wants to connect"
+                        }
+                        notification.fromDisplayName.isNotEmpty() -> "${notification.fromDisplayName} is ${notification.label.lowercase()}"
+                        else -> "Someone is ${notification.label.lowercase()}"
+                    },
+                    fontSize = 16.sp,
+                    fontWeight = if (notification.read) FontWeight.Normal else FontWeight.SemiBold,
+                    color = CardTextPrimary
                 )
 
                 notification.timestamp?.let { ts ->
                     Text(
                         text = formatNotificationTime(ts),
-                        style = MaterialTheme.typography.labelSmall
+                        fontSize = 13.sp,
+                        color = CardTextSecondary
                     )
                 }
             }
 
             // Severity indicator
             val severityColor = when {
+                isAccountDeleted -> BadRed
                 notification.label.contains("bad", ignoreCase = true) -> BadRed
                 notification.label.contains("low", ignoreCase = true) -> LowAmber
                 else -> Color.Transparent
@@ -175,9 +213,19 @@ private fun NotificationCard(
             if (severityColor != Color.Transparent) {
                 Box(
                     modifier = Modifier
-                        .size(12.dp)
+                        .size(14.dp)
                         .clip(CircleShape)
                         .background(severityColor)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
+            // Delete button
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = CardTextSecondary
                 )
             }
         }

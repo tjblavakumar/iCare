@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.messaging)
+    implementation("com.google.firebase:firebase-functions-ktx")
 
     // Google Sign-In
     implementation(libs.google.credentials)

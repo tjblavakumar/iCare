@@ -1,5 +1,10 @@
 package com.icare.app.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
@@ -9,15 +14,21 @@ import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import com.icare.app.ui.navigation.Screen
+import com.icare.app.ui.theme.BadRed
 import com.icare.app.ui.theme.WarmCoral
 import com.icare.app.ui.theme.WarmWhite
 
@@ -31,7 +42,8 @@ data class BottomNavItem(
 @Composable
 fun BottomNavBar(
     currentRoute: String?,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    pendingRequestsCount: Int = 0
 ) {
     val items = listOf(
         BottomNavItem(Screen.Home.route, "Home", Icons.Filled.Home, Icons.Outlined.Home),
@@ -46,14 +58,34 @@ fun BottomNavBar(
     ) {
         items.forEach { item ->
             val isSelected = currentRoute == item.route
+            val showBadge = item.route == Screen.Notifications.route && pendingRequestsCount > 0
+            
             NavigationBarItem(
                 selected = isSelected,
                 onClick = { onNavigate(item.route) },
                 icon = {
-                    Icon(
-                        imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = item.label
-                    )
+                    if (showBadge) {
+                        BadgedBox(
+                            badge = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(BadRed)
+                                )
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                                contentDescription = item.label
+                            )
+                        }
+                    } else {
+                        Icon(
+                            imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                            contentDescription = item.label
+                        )
+                    }
                 },
                 label = { Text(text = item.label) },
                 colors = NavigationBarItemDefaults.colors(

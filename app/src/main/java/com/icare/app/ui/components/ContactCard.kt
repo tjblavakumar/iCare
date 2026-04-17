@@ -30,6 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.icare.app.data.repository.ContactWithStatus
 import com.icare.app.ui.theme.BadRed
+import com.icare.app.ui.theme.CardBackground
+import com.icare.app.ui.theme.CardTextPrimary
+import com.icare.app.ui.theme.CardTextSecondary
 import com.icare.app.ui.theme.HappyGreen
 import com.icare.app.ui.theme.InactiveGrey
 import com.icare.app.ui.theme.LowAmber
@@ -66,7 +69,7 @@ fun ContactCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = CardBackground
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -80,7 +83,7 @@ fun ContactCard(
             // Status indicator dot
             Box(
                 modifier = Modifier
-                    .size(12.dp)
+                    .size(14.dp)
                     .clip(CircleShape)
                     .background(statusColor)
             )
@@ -88,24 +91,25 @@ fun ContactCard(
             // Emoji
             Text(
                 text = if (contact.isInactive) "\u2B55" else (contact.currentStatus?.emoji ?: "\u2B55"),
-                fontSize = 32.sp
+                fontSize = 36.sp
             )
 
             // Name and timestamp
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = contact.displayName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = CardTextPrimary
                 )
 
                 if (contact.isInactive) {
                     Text(
                         text = "Inactive for 48+ hours",
-                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 14.sp,
                         color = InactiveGrey
                     )
                 } else {
@@ -113,7 +117,7 @@ fun ContactCard(
                     if (timestamp != null) {
                         Text(
                             text = "${contact.currentStatus.label} \u2022 ${formatTimestamp(timestamp)}",
-                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 14.sp,
                             color = statusColor
                         )
                     }
