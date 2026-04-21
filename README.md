@@ -63,7 +63,7 @@ iCare/
 ## Quick Start
 
 1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com/)
-2. Register an Android app with package name `com.icare.app`
+2. Register an Android app with package name `com.tjblavakumar.icare`
 3. Download `google-services.json` → place in `app/`
 4. Enable Email/Password and Google Sign-In auth providers
 5. Enable Cloud Firestore
