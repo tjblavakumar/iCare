@@ -188,15 +188,16 @@ private fun NotificationCard(
                         notification.fromDisplayName.isNotEmpty() -> "${notification.fromDisplayName} is ${notification.label.lowercase()}"
                         else -> "Someone is ${notification.label.lowercase()}"
                     },
-                    fontSize = 16.sp,
-                    fontWeight = if (notification.read) FontWeight.Normal else FontWeight.SemiBold,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = if (notification.read) FontWeight.Normal else FontWeight.SemiBold
+                    ),
                     color = CardTextPrimary
                 )
 
                 notification.timestamp?.let { ts ->
                     Text(
                         text = formatNotificationTime(ts),
-                        fontSize = 13.sp,
+                        style = MaterialTheme.typography.labelSmall,
                         color = CardTextSecondary
                     )
                 }

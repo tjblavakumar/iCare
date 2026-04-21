@@ -124,7 +124,7 @@ fun CircleScreen(
                         ContactCard(
                             contact = contact,
                             onClick = { onContactClick(contact.userId) },
-                            onLongClick = { viewModel.startEditingNickname(contact) },
+                            onNameClick = { viewModel.startEditingNickname(contact) },
                             onCallClick = {
                                 val phoneNumber = contact.phone.ifEmpty { contact.email }
                                 if (phoneNumber.isNotEmpty()) {

@@ -2,6 +2,7 @@ package com.icare.app.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,11 +30,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.icare.app.data.model.EmojiCategory
+import com.icare.app.data.model.EmojiStatus
 import com.icare.app.data.repository.ContactWithStatus
 import com.icare.app.ui.theme.BadRed
 import com.icare.app.ui.theme.CardBackground
 import com.icare.app.ui.theme.CardTextPrimary
 import com.icare.app.ui.theme.CardTextSecondary
+import com.icare.app.ui.theme.ClickableBlue
 import com.icare.app.ui.theme.HappyGreen
 import com.icare.app.ui.theme.InactiveGrey
 import com.icare.app.ui.theme.LowAmber
@@ -49,30 +53,28 @@ import java.util.TimeZone
 fun ContactCard(
     contact: ContactWithStatus,
     onClick: () -> Unit,
-    onLongClick: () -> Unit = {},
+    onNameClick: () -> Unit,
     onCallClick: () -> Unit,
     onTextClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Determine color based on emoji category
+    val emojiCategory = contact.currentStatus?.emojiId?.let { emojiId ->
+        EmojiStatus.allAvailable().find { it.id == emojiId }?.category
+    }
+    
     val statusColor = when {
         contact.isInactive -> InactiveGrey
-        contact.currentStatus?.emojiId == "bad" -> BadRed
-        contact.currentStatus?.emojiId == "low" -> LowAmber
-        contact.currentStatus?.emojiId == "happy" -> HappyGreen
-        else -> when {
-            contact.currentStatus?.label?.contains("bad", ignoreCase = true) == true -> BadRed
-            contact.currentStatus?.label?.contains("low", ignoreCase = true) == true -> LowAmber
-            else -> HappyGreen
-        }
+        emojiCategory == EmojiCategory.NEGATIVE -> BadRed
+        emojiCategory == EmojiCategory.NEUTRAL -> LowAmber
+        emojiCategory == EmojiCategory.POSITIVE -> HappyGreen
+        else -> HappyGreen // Default for unknown emojis
     }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            ),
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = CardBackground
@@ -105,17 +107,18 @@ fun ContactCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                // Name is clickable to edit nickname
                 Text(
                     text = contact.effectiveDisplayName,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = CardTextPrimary
+                    style = MaterialTheme.typography.titleMedium,
+                    color = ClickableBlue,
+                    modifier = Modifier.clickable(onClick = onNameClick)
                 )
                 
                 if (contact.customDisplayName != null) {
                     Text(
                         text = contact.displayName,
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.labelSmall,
                         color = CardTextSecondary
                     )
                 }
@@ -123,7 +126,7 @@ fun ContactCard(
                 if (contact.isInactive) {
                     Text(
                         text = "Inactive for 48+ hours",
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.labelSmall,
                         color = InactiveGrey
                     )
                 } else {
@@ -131,28 +134,30 @@ fun ContactCard(
                     if (timestamp != null) {
                         Text(
                             text = "${contact.currentStatus.label} \u2022 ${formatTimestamp(timestamp)}",
-                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.labelSmall,
                             color = statusColor
                         )
                     }
                 }
             }
 
-            // Quick actions
-            IconButton(onClick = onCallClick) {
-                Icon(
-                    imageVector = Icons.Default.Call,
-                    contentDescription = "Call",
-                    tint = SoftTeal
-                )
-            }
+            // Quick actions - only show if contact has a phone number
+            if (contact.phone.isNotEmpty()) {
+                IconButton(onClick = onCallClick) {
+                    Icon(
+                        imageVector = Icons.Default.Call,
+                        contentDescription = "Call",
+                        tint = SoftTeal
+                    )
+                }
 
-            IconButton(onClick = onTextClick) {
-                Icon(
-                    imageVector = Icons.Default.Sms,
-                    contentDescription = "Text",
-                    tint = SoftTeal
-                )
+                IconButton(onClick = onTextClick) {
+                    Icon(
+                        imageVector = Icons.Default.Sms,
+                        contentDescription = "Text",
+                        tint = SoftTeal
+                    )
+                }
             }
         }
     }

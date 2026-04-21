@@ -21,7 +21,9 @@ data class EmojiStatus(
         val PREDEFINED_EXTRAS = listOf(
             EmojiStatus("tired", "\uD83D\uDE34", "Tired", EmojiCategory.NEUTRAL),
             EmojiStatus("excited", "\uD83C\uDF89", "Excited", EmojiCategory.POSITIVE),
-            EmojiStatus("angry", "\uD83D\uDE24", "Frustrated", EmojiCategory.NEGATIVE),
+            EmojiStatus("angry", "\uD83D\uDE20", "Angry", EmojiCategory.NEGATIVE),
+            EmojiStatus("hungry", "\uD83C\uDF7D", "Hungry", EmojiCategory.NEUTRAL),
+            EmojiStatus("frustrated", "\uD83D\uDE24", "Frustrated", EmojiCategory.NEGATIVE),
             EmojiStatus("sick", "\uD83E\uDD12", "Sick", EmojiCategory.NEGATIVE),
             EmojiStatus("peaceful", "\uD83D\uDE0C", "Peaceful", EmojiCategory.POSITIVE),
             EmojiStatus("anxious", "\uD83D\uDE30", "Anxious", EmojiCategory.NEGATIVE),

@@ -12,6 +12,9 @@ val SoftSky = Color(0xFF87CEEB)
 val SoftSkyLight = Color(0xFFB0E0F0)
 val SoftSkyDark = Color(0xFF5FAFD7)
 
+// Clickable text color - darker blue for better contrast
+val ClickableBlue = Color(0xFF1E6BB8)
+
 // Legacy aliases for compatibility
 val WarmCoral = SoothingBlue
 val WarmCoralLight = SoothingBlueLight
