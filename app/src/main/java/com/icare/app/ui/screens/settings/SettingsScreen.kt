@@ -1,5 +1,6 @@
 package com.icare.app.ui.screens.settings
 
+import com.icare.app.BuildConfig
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -243,7 +244,7 @@ fun SettingsScreen(
             SettingsItem(
                 icon = Icons.Default.Info,
                 title = "About",
-                subtitle = "iCare v1.0.0"
+                subtitle = "iCare v${BuildConfig.VERSION_NAME}"
             )
 
             // Show error message if any
