@@ -93,8 +93,16 @@ fun SettingsScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text("Settings", color = Color.White) },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = WarmCoral)
+            title = { 
+                Text(
+                    "Settings", 
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleMedium
+                ) 
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background
+            )
         )
 
         Column(

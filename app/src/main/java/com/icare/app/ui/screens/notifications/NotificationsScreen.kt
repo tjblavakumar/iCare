@@ -48,6 +48,7 @@ import com.icare.app.ui.theme.CardBackground
 import com.icare.app.ui.theme.CardTextPrimary
 import com.icare.app.ui.theme.CardTextSecondary
 import com.icare.app.ui.theme.LowAmber
+import com.icare.app.ui.theme.SoothingBlue
 import com.icare.app.ui.theme.WarmCoral
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -62,10 +63,22 @@ fun NotificationsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         TopAppBar(
-            title = { Text("Alerts", color = Color.White) },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = WarmCoral),
+            title = { 
+                Text(
+                    "Alerts", 
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleMedium
+                ) 
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background
+            ),
             actions = {
                 if (uiState.notifications.isNotEmpty()) {
                     TextButton(
@@ -74,10 +87,10 @@ fun NotificationsScreen(
                         Icon(
                             imageVector = Icons.Default.DeleteSweep,
                             contentDescription = "Clear All",
-                            tint = Color.White
+                            tint = SoothingBlue
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Clear All", color = Color.White)
+                        Text("Clear All", color = SoothingBlue)
                     }
                 }
             }

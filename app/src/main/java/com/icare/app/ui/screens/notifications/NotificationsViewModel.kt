@@ -25,7 +25,14 @@ class NotificationsViewModel @Inject constructor(
     val uiState: StateFlow<NotificationsUiState> = _uiState.asStateFlow()
 
     init {
+        cleanupOldNotifications()
         observeNotifications()
+    }
+
+    private fun cleanupOldNotifications() {
+        viewModelScope.launch {
+            notificationRepository.deleteOldNotifications()
+        }
     }
 
     private fun observeNotifications() {

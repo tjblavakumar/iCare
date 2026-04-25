@@ -2,6 +2,7 @@ package com.icare.app.ui.screens.circle
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.icare.app.ui.components.ContactCard
 import com.icare.app.ui.components.EditNicknameDialog
+import com.icare.app.ui.theme.SoothingBlue
 import com.icare.app.ui.theme.WarmCoral
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,23 +57,35 @@ fun CircleScreen(
         viewModel.loadContacts()
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         TopAppBar(
-            title = { Text("My Circle", color = Color.White) },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = WarmCoral),
+            title = { 
+                Text(
+                    "My Circle", 
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleMedium
+                ) 
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background
+            ),
             actions = {
                 IconButton(onClick = onAddContactClick) {
                     Icon(
                         imageVector = Icons.Default.PersonAdd,
                         contentDescription = "Add Contact",
-                        tint = Color.White
+                        tint = SoothingBlue
                     )
                 }
                 IconButton(onClick = { viewModel.loadContacts() }) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Refresh",
-                        tint = Color.White
+                        tint = SoothingBlue
                     )
                 }
             }

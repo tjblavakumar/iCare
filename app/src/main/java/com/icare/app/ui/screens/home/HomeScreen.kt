@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,6 +34,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.icare.app.data.model.EmojiStatus
 import com.icare.app.ui.components.EmojiButton
+import com.icare.app.ui.theme.BadRed
+import com.icare.app.ui.theme.HappyGreen
+import com.icare.app.ui.theme.LowAmber
 import com.icare.app.ui.theme.MediumGrey
 import com.icare.app.ui.theme.WarmCoral
 import com.google.firebase.Timestamp
@@ -74,7 +79,7 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Default 3 emojis
+        // Default 3 emojis with colored borders
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -84,7 +89,8 @@ fun HomeScreen(
                 EmojiButton(
                     emojiStatus = emoji,
                     isSelected = uiState.currentStatus?.emojiId == emoji.id,
-                    onClick = { viewModel.updateStatus(emoji) }
+                    onClick = { viewModel.updateStatus(emoji) },
+                    showCategoryBorder = true
                 )
             }
         }
@@ -100,28 +106,47 @@ fun HomeScreen(
             )
         }
 
-        // Extra emojis
+        // Extra emojis grouped by category
         AnimatedVisibility(
             visible = uiState.showMoreEmojis,
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            FlowRow(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(top = 8.dp)
             ) {
-                EmojiStatus.PREDEFINED_EXTRAS.forEach { emoji ->
-                    EmojiButton(
-                        emojiStatus = emoji,
-                        isSelected = uiState.currentStatus?.emojiId == emoji.id,
-                        onClick = { viewModel.updateStatus(emoji) },
-                        size = 80.dp,
-                        emojiSize = 36
-                    )
-                }
+                // Positive section
+                EmojiSection(
+                    title = "Positive",
+                    color = HappyGreen,
+                    emojis = EmojiStatus.POSITIVE_EXTRAS,
+                    currentStatusId = uiState.currentStatus?.emojiId,
+                    onEmojiClick = { viewModel.updateStatus(it) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Neutral section
+                EmojiSection(
+                    title = "Neutral",
+                    color = LowAmber,
+                    emojis = EmojiStatus.NEUTRAL_EXTRAS,
+                    currentStatusId = uiState.currentStatus?.emojiId,
+                    onEmojiClick = { viewModel.updateStatus(it) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Negative section
+                EmojiSection(
+                    title = "Negative",
+                    color = BadRed,
+                    emojis = EmojiStatus.NEGATIVE_EXTRAS,
+                    currentStatusId = uiState.currentStatus?.emojiId,
+                    onEmojiClick = { viewModel.updateStatus(it) }
+                )
             }
         }
 
@@ -142,6 +167,58 @@ fun HomeScreen(
                     style = MaterialTheme.typography.labelSmall,
                     color = MediumGrey,
                     textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun EmojiSection(
+    title: String,
+    color: androidx.compose.ui.graphics.Color,
+    emojis: List<EmojiStatus>,
+    currentStatusId: String?,
+    onEmojiClick: (EmojiStatus) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // Section header with colored line
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = color.copy(alpha = 0.3f)
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium,
+                color = color,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = color.copy(alpha = 0.3f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Emojis in row
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            emojis.forEach { emoji ->
+                EmojiButton(
+                    emojiStatus = emoji,
+                    isSelected = currentStatusId == emoji.id,
+                    onClick = { onEmojiClick(emoji) },
+                    size = 80.dp,
+                    emojiSize = 36
                 )
             }
         }

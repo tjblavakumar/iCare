@@ -14,24 +14,33 @@ data class EmojiStatus(
     val isDefault: Boolean = false
 ) {
     companion object {
+        // Default emojis - one from each category
         val HAPPY = EmojiStatus("happy", "\uD83D\uDE0A", "Happy", EmojiCategory.POSITIVE, isDefault = true)
-        val FEELING_LOW = EmojiStatus("low", "\uD83D\uDE14", "Feeling Low", EmojiCategory.NEGATIVE, isDefault = true)
+        val TIRED = EmojiStatus("tired", "\uD83D\uDE34", "Tired", EmojiCategory.NEUTRAL, isDefault = true)
         val FEELING_BAD = EmojiStatus("bad", "\uD83D\uDE22", "Feeling Bad", EmojiCategory.NEGATIVE, isDefault = true)
 
-        val PREDEFINED_EXTRAS = listOf(
-            EmojiStatus("tired", "\uD83D\uDE34", "Tired", EmojiCategory.NEUTRAL),
+        // Expanded view emojis - grouped by category (excluding defaults)
+        val POSITIVE_EXTRAS = listOf(
             EmojiStatus("excited", "\uD83C\uDF89", "Excited", EmojiCategory.POSITIVE),
-            EmojiStatus("angry", "\uD83D\uDE20", "Angry", EmojiCategory.NEGATIVE),
-            EmojiStatus("hungry", "\uD83C\uDF7D", "Hungry", EmojiCategory.NEUTRAL),
-            EmojiStatus("frustrated", "\uD83D\uDE24", "Frustrated", EmojiCategory.NEGATIVE),
-            EmojiStatus("sick", "\uD83E\uDD12", "Sick", EmojiCategory.NEGATIVE),
             EmojiStatus("peaceful", "\uD83D\uDE0C", "Peaceful", EmojiCategory.POSITIVE),
-            EmojiStatus("anxious", "\uD83D\uDE30", "Anxious", EmojiCategory.NEGATIVE),
-            EmojiStatus("grateful", "\uD83D\uDE4F", "Grateful", EmojiCategory.POSITIVE),
-            EmojiStatus("bored", "\uD83D\uDE11", "Bored", EmojiCategory.NEUTRAL)
+            EmojiStatus("grateful", "\uD83D\uDE4F", "Grateful", EmojiCategory.POSITIVE)
         )
 
-        val DEFAULTS = listOf(HAPPY, FEELING_LOW, FEELING_BAD)
+        val NEUTRAL_EXTRAS = listOf(
+            EmojiStatus("hungry", "\uD83C\uDF7D", "Hungry", EmojiCategory.NEUTRAL),
+            EmojiStatus("bored", "\uD83D\uDE11", "Bored", EmojiCategory.NEUTRAL),
+            EmojiStatus("thinking", "\uD83E\uDD14", "Thinking", EmojiCategory.NEUTRAL)
+        )
+
+        val NEGATIVE_EXTRAS = listOf(
+            EmojiStatus("angry", "\uD83D\uDE20", "Angry", EmojiCategory.NEGATIVE),
+            EmojiStatus("frustrated", "\uD83D\uDE24", "Frustrated", EmojiCategory.NEGATIVE),
+            EmojiStatus("sick", "\uD83E\uDD12", "Sick", EmojiCategory.NEGATIVE)
+        )
+
+        val PREDEFINED_EXTRAS = POSITIVE_EXTRAS + NEUTRAL_EXTRAS + NEGATIVE_EXTRAS
+
+        val DEFAULTS = listOf(HAPPY, TIRED, FEELING_BAD)
 
         fun allAvailable(): List<EmojiStatus> = DEFAULTS + PREDEFINED_EXTRAS
 

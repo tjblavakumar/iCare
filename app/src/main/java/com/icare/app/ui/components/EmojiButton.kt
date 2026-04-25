@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -40,7 +41,8 @@ fun EmojiButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = 100.dp,
-    emojiSize: Int = 48
+    emojiSize: Int = 48,
+    showCategoryBorder: Boolean = false
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -55,18 +57,18 @@ fun EmojiButton(
         label = "scale"
     )
 
+    // Border color based on category (for default emojis)
+    val borderColor = when (emojiStatus.category) {
+        EmojiCategory.POSITIVE -> HappyGreen
+        EmojiCategory.NEUTRAL -> LowAmber
+        EmojiCategory.NEGATIVE -> BadRed
+    }
+
     val backgroundColor by animateColorAsState(
         targetValue = if (isSelected) {
-            when (emojiStatus.id) {
-                "happy" -> HappyGreen.copy(alpha = 0.15f)
-                "low" -> LowAmber.copy(alpha = 0.15f)
-                "bad" -> BadRed.copy(alpha = 0.15f)
-                else -> when (emojiStatus.category) {
-                    EmojiCategory.POSITIVE -> HappyGreen.copy(alpha = 0.15f)
-                    EmojiCategory.NEGATIVE -> BadRed.copy(alpha = 0.15f)
-                    EmojiCategory.NEUTRAL -> MediumGrey.copy(alpha = 0.15f)
-                }
-            }
+            borderColor.copy(alpha = 0.15f)
+        } else if (showCategoryBorder) {
+            borderColor.copy(alpha = 0.08f)
         } else {
             Color.Transparent
         },
@@ -84,6 +86,13 @@ fun EmojiButton(
                 .size(size)
                 .scale(scale)
                 .clip(CircleShape)
+                .then(
+                    if (showCategoryBorder) {
+                        Modifier.border(2.dp, borderColor.copy(alpha = 0.6f), CircleShape)
+                    } else {
+                        Modifier
+                    }
+                )
                 .background(backgroundColor)
                 .clickable(
                     interactionSource = interactionSource,
@@ -102,7 +111,7 @@ fun EmojiButton(
             style = MaterialTheme.typography.labelLarge,
             textAlign = TextAlign.Center,
             color = if (isSelected) {
-                MaterialTheme.colorScheme.primary
+                borderColor
             } else {
                 MaterialTheme.colorScheme.onSurface
             }

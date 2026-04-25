@@ -1,5 +1,6 @@
 package com.icare.app.data.repository
 
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -104,5 +105,29 @@ class NotificationRepository @Inject constructor(
             batch.delete(doc.reference)
         }
         batch.commit().await()
+    }
+
+    suspend fun deleteOldNotifications(): Result<Int> = runCatching {
+        if (uid.isEmpty()) throw Exception("Not logged in")
+        
+        // Calculate timestamp for 7 days ago
+        val sevenDaysAgo = Timestamp(
+            System.currentTimeMillis() / 1000 - (7 * 24 * 60 * 60),
+            0
+        )
+        
+        val snapshot = firestore.collection("users").document(uid)
+            .collection("notifications")
+            .whereLessThan("timestamp", sevenDaysAgo)
+            .get().await()
+        
+        if (snapshot.documents.isEmpty()) return@runCatching 0
+        
+        val batch = firestore.batch()
+        snapshot.documents.forEach { doc ->
+            batch.delete(doc.reference)
+        }
+        batch.commit().await()
+        snapshot.documents.size
     }
 }
