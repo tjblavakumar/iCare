@@ -2,6 +2,7 @@ package com.icare.app.ui.screens.settings
 
 import com.icare.app.BuildConfig
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,8 +35,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,6 +55,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.icare.app.di.dataStore
 import com.icare.app.ui.theme.BadRed
+import com.icare.app.ui.theme.SoothingBlue
 import com.icare.app.ui.theme.TextSizeScale
 import com.icare.app.ui.theme.WarmCoral
 import kotlinx.coroutines.flow.first
@@ -92,18 +92,22 @@ fun SettingsScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = { 
-                Text(
-                    "Settings", 
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
-                ) 
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background
+        // Compact header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Settings",
+                color = Color.White,
+                style = MaterialTheme.typography.headlineSmall
             )
-        )
+        }
+        
+        HorizontalDivider(color = SoothingBlue.copy(alpha = 0.3f))
 
         Column(
             modifier = Modifier

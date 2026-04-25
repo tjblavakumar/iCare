@@ -26,13 +26,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.icare.app.data.model.EmojiCategory
 import com.icare.app.data.model.EmojiStatus
 import com.icare.app.ui.theme.BadRed
 import com.icare.app.ui.theme.HappyGreen
 import com.icare.app.ui.theme.LowAmber
-import com.icare.app.ui.theme.MediumGrey
 
 @Composable
 fun EmojiButton(
@@ -41,11 +43,15 @@ fun EmojiButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = 100.dp,
-    emojiSize: Int = 48,
     showCategoryBorder: Boolean = false
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+
+    // Load Lottie composition
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(emojiStatus.lottieRes)
+    )
 
     val scale by animateFloatAsState(
         targetValue = when {
@@ -77,7 +83,7 @@ fun EmojiButton(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier
     ) {
         Box(
@@ -100,9 +106,10 @@ fun EmojiButton(
                     onClick = onClick
                 )
         ) {
-            Text(
-                text = emojiStatus.emoji,
-                fontSize = emojiSize.sp
+            LottieAnimation(
+                composition = composition,
+                iterations = LottieConstants.IterateForever,
+                modifier = Modifier.size(size * 0.7f)
             )
         }
 

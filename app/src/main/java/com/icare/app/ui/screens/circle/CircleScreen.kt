@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,13 +20,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,7 +42,6 @@ import com.icare.app.ui.components.EditNicknameDialog
 import com.icare.app.ui.theme.SoothingBlue
 import com.icare.app.ui.theme.WarmCoral
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CircleScreen(
     onContactClick: (String) -> Unit,
@@ -62,18 +61,20 @@ fun CircleScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        TopAppBar(
-            title = { 
-                Text(
-                    "My Circle", 
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
-                ) 
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background
-            ),
-            actions = {
+        // Compact header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "My Circle",
+                color = Color.White,
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Row {
                 IconButton(onClick = onAddContactClick) {
                     Icon(
                         imageVector = Icons.Default.PersonAdd,
@@ -89,7 +90,9 @@ fun CircleScreen(
                     )
                 }
             }
-        )
+        }
+        
+        HorizontalDivider(color = SoothingBlue.copy(alpha = 0.3f))
 
         when {
             uiState.isLoading -> {

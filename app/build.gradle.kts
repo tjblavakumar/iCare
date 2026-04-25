@@ -16,8 +16,8 @@ android {
         applicationId = "com.tjblavakumar.icare"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.2.1"
+        versionCode = 5
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -88,6 +88,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.kotlinx.serialization.json)
+
+    // Lottie for animated emojis
+    implementation("com.airbnb.android:lottie-compose:6.4.0")
 
     // Testing
     testImplementation(libs.junit)

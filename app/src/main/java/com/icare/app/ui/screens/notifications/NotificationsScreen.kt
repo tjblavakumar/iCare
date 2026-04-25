@@ -22,14 +22,12 @@ import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,7 +54,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsScreen(
     viewModel: NotificationsViewModel = hiltViewModel()
@@ -68,33 +65,35 @@ fun NotificationsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        TopAppBar(
-            title = { 
-                Text(
-                    "Alerts", 
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
-                ) 
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background
-            ),
-            actions = {
-                if (uiState.notifications.isNotEmpty()) {
-                    TextButton(
-                        onClick = { viewModel.deleteAllNotifications() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DeleteSweep,
-                            contentDescription = "Clear All",
-                            tint = SoothingBlue
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Clear All", color = SoothingBlue)
-                    }
+        // Compact header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Alerts",
+                color = Color.White,
+                style = MaterialTheme.typography.headlineSmall
+            )
+            if (uiState.notifications.isNotEmpty()) {
+                TextButton(
+                    onClick = { viewModel.deleteAllNotifications() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DeleteSweep,
+                        contentDescription = "Clear All",
+                        tint = SoothingBlue
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Clear All", color = SoothingBlue)
                 }
             }
-        )
+        }
+        
+        HorizontalDivider(color = SoothingBlue.copy(alpha = 0.3f))
 
         when {
             uiState.isLoading -> {
