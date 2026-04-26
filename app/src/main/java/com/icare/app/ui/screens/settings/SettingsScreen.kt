@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Pending
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Share
@@ -33,8 +34,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,11 +54,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.icare.app.ui.components.CompactScreenHeader
 import com.icare.app.di.dataStore
+import com.icare.app.worker.ReminderScheduler
 import com.icare.app.ui.theme.BadRed
 import com.icare.app.ui.theme.SoothingBlue
 import com.icare.app.ui.theme.TextSizeScale
@@ -76,6 +83,10 @@ fun SettingsScreen(
     var showTextSizeDialog by remember { mutableStateOf(false) }
     var editedName by remember { mutableStateOf("") }
     var currentTextSize by remember { mutableStateOf(TextSizeScale.NORMAL) }
+    var reminderEnabled by remember { mutableStateOf(false) }
+    var reminderHour by remember { mutableStateOf(9) }
+    var reminderMinute by remember { mutableStateOf(0) }
+    var showTimePickerDialog by remember { mutableStateOf(false) }
     
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -89,6 +100,9 @@ fun SettingsScreen(
         } catch (e: Exception) {
             TextSizeScale.NORMAL
         }
+        reminderEnabled = prefs[booleanPreferencesKey("reminder_enabled")] ?: false
+        reminderHour = prefs[intPreferencesKey("reminder_hour")] ?: 9
+        reminderMinute = prefs[intPreferencesKey("reminder_minute")] ?: 0
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -238,6 +252,75 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
+            // Notifications section
+            Text(
+                text = "NOTIFICATIONS",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.NotificationsNone,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = SoothingBlue
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Daily Check-in Reminder",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "Remind me to share how I'm feeling",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = reminderEnabled,
+                    onCheckedChange = { enabled ->
+                        reminderEnabled = enabled
+                        scope.launch {
+                            context.dataStore.edit { prefs ->
+                                prefs[booleanPreferencesKey("reminder_enabled")] = enabled
+                            }
+                        }
+                        if (enabled) {
+                            ReminderScheduler.schedule(context, reminderHour, reminderMinute)
+                        } else {
+                            ReminderScheduler.cancel(context)
+                        }
+                    }
+                )
+            }
+
+            if (reminderEnabled) {
+                val isPm = reminderHour >= 12
+                val displayHour = when {
+                    reminderHour == 0 -> 12
+                    reminderHour > 12 -> reminderHour - 12
+                    else -> reminderHour
+                }
+                val timeLabel = "%d:%02d %s".format(displayHour, reminderMinute, if (isPm) "PM" else "AM")
+                SettingsItem(
+                    icon = Icons.Default.NotificationsNone,
+                    title = "Reminder Time",
+                    subtitle = timeLabel,
+                    onClick = { showTimePickerDialog = true }
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
             SettingsItem(
                 icon = Icons.Default.Info,
                 title = "About",
@@ -342,6 +425,39 @@ fun SettingsScreen(
                 TextButton(onClick = { showDeleteDialog = false }) {
                     Text("Keep My Account", color = SoothingBlue)
                 }
+            }
+        )
+    }
+
+    // Time picker dialog
+    if (showTimePickerDialog) {
+        val timePickerState = rememberTimePickerState(
+            initialHour = reminderHour,
+            initialMinute = reminderMinute,
+            is24Hour = false
+        )
+        AlertDialog(
+            onDismissRequest = { showTimePickerDialog = false },
+            title = { Text("Reminder Time") },
+            text = { TimePicker(state = timePickerState) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        reminderHour = timePickerState.hour
+                        reminderMinute = timePickerState.minute
+                        scope.launch {
+                            context.dataStore.edit { prefs ->
+                                prefs[intPreferencesKey("reminder_hour")] = timePickerState.hour
+                                prefs[intPreferencesKey("reminder_minute")] = timePickerState.minute
+                            }
+                        }
+                        ReminderScheduler.schedule(context, timePickerState.hour, timePickerState.minute)
+                        showTimePickerDialog = false
+                    }
+                ) { Text("Save", color = SoothingBlue) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePickerDialog = false }) { Text("Cancel") }
             }
         )
     }

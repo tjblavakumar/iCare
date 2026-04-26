@@ -165,15 +165,23 @@ fun ContactCard(
 
 private fun formatTimestamp(timestamp: Timestamp): String {
     val date = Date(timestamp.seconds * 1000)
-    val now = Date()
     val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
     sdf.timeZone = TimeZone.getDefault()
 
-    val dayDiff = (now.time - date.time) / (1000 * 60 * 60 * 24)
+    val cal = java.util.Calendar.getInstance()
+    val todayStart = (cal.clone() as java.util.Calendar).apply {
+        set(java.util.Calendar.HOUR_OF_DAY, 0)
+        set(java.util.Calendar.MINUTE, 0)
+        set(java.util.Calendar.SECOND, 0)
+        set(java.util.Calendar.MILLISECOND, 0)
+    }
+    val yesterdayStart = (todayStart.clone() as java.util.Calendar).apply {
+        add(java.util.Calendar.DAY_OF_YEAR, -1)
+    }
 
     return when {
-        dayDiff < 1 -> "Today ${sdf.format(date)}"
-        dayDiff < 2 -> "Yesterday ${sdf.format(date)}"
+        date.time >= todayStart.timeInMillis -> "Today ${sdf.format(date)}"
+        date.time >= yesterdayStart.timeInMillis -> "Yesterday ${sdf.format(date)}"
         else -> {
             val dateSdf = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())
             dateSdf.timeZone = TimeZone.getDefault()
