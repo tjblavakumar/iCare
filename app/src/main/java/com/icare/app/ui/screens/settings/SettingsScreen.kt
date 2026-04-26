@@ -53,11 +53,11 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.icare.app.ui.components.CompactScreenHeader
 import com.icare.app.di.dataStore
 import com.icare.app.ui.theme.BadRed
 import com.icare.app.ui.theme.SoothingBlue
 import com.icare.app.ui.theme.TextSizeScale
-import com.icare.app.ui.theme.WarmCoral
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -92,22 +92,7 @@ fun SettingsScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Compact header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "Settings",
-                color = Color.White,
-                style = MaterialTheme.typography.headlineSmall
-            )
-        }
-        
-        HorizontalDivider(color = SoothingBlue.copy(alpha = 0.3f))
+        CompactScreenHeader(title = "Settings")
 
         Column(
             modifier = Modifier
@@ -165,7 +150,7 @@ fun SettingsScreen(
                             text = user.iCareId,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = WarmCoral
+                            color = SoothingBlue
                         )
                     }
                     Text(
@@ -280,7 +265,7 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = WarmCoral)
+                CircularProgressIndicator(color = SoothingBlue)
             }
         }
     }
@@ -305,7 +290,7 @@ fun SettingsScreen(
                         showEditNameDialog = false
                     }
                 ) {
-                    Text("Save", color = WarmCoral)
+                    Text("Save", color = SoothingBlue)
                 }
             },
             dismissButton = {
@@ -355,7 +340,7 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Keep My Account", color = WarmCoral)
+                    Text("Keep My Account", color = SoothingBlue)
                 }
             }
         )
@@ -388,11 +373,11 @@ fun SettingsScreen(
                                 text = scale.label,
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = if (scale == currentTextSize) FontWeight.Bold else FontWeight.Normal,
-                                color = if (scale == currentTextSize) WarmCoral else MaterialTheme.colorScheme.onSurface
+                                color = if (scale == currentTextSize) SoothingBlue else MaterialTheme.colorScheme.onSurface
                             )
                             if (scale == currentTextSize) {
                                 Spacer(modifier = Modifier.weight(1f))
-                                Text("✓", color = WarmCoral, fontWeight = FontWeight.Bold)
+                                Text("✓", color = SoothingBlue, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -426,7 +411,7 @@ private fun SettingsItem(
             imageVector = icon,
             contentDescription = title,
             modifier = Modifier.size(24.dp),
-            tint = if (titleColor == BadRed) BadRed else WarmCoral
+            tint = if (titleColor == BadRed) BadRed else SoothingBlue
         )
 
         Spacer(modifier = Modifier.width(16.dp))

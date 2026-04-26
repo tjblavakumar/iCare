@@ -47,7 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.icare.app.ui.theme.WarmCoral
+import com.icare.app.ui.theme.SoothingBlue
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,7 +102,7 @@ fun OtpVerificationScreen(
                     )
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = WarmCoral)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = SoothingBlue)
         )
 
         Column(
@@ -137,7 +137,7 @@ fun OtpVerificationScreen(
                 text = maskedEmail,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = WarmCoral
+                color = SoothingBlue
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -189,7 +189,7 @@ fun OtpVerificationScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = WarmCoral)
+                colors = ButtonDefaults.buttonColors(containerColor = SoothingBlue)
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
@@ -213,7 +213,7 @@ fun OtpVerificationScreen(
                     },
                     enabled = !uiState.isLoading
                 ) {
-                    Text("Resend Code", color = WarmCoral)
+                    Text("Resend Code", color = SoothingBlue)
                 }
             } else {
                 Text(
@@ -245,7 +245,7 @@ private fun OtpDigitBox(
             .size(56.dp)
             .border(
                 width = 2.dp,
-                color = if (isFocused) WarmCoral else MaterialTheme.colorScheme.outline,
+                color = if (isFocused) SoothingBlue else MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(12.dp)
             ),
         contentAlignment = Alignment.Center

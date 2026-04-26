@@ -48,7 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.icare.app.R
-import com.icare.app.ui.theme.WarmCoral
+import com.icare.app.ui.theme.SoothingBlue
 import kotlinx.coroutines.launch
 
 @Composable
@@ -119,7 +119,7 @@ fun LoginScreen(
         Text(
             text = "iCare",
             style = MaterialTheme.typography.displayLarge,
-            color = WarmCoral,
+            color = SoothingBlue,
             fontWeight = FontWeight.Bold
         )
 
@@ -198,7 +198,7 @@ fun LoginScreen(
         TextButton(onClick = onNavigateToForgotPassword) {
             Text(
                 text = "Forgot Passcode?",
-                color = WarmCoral
+                color = SoothingBlue
             )
         }
 
@@ -210,7 +210,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = WarmCoral)
+            colors = ButtonDefaults.buttonColors(containerColor = SoothingBlue)
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(
@@ -227,7 +227,7 @@ fun LoginScreen(
         TextButton(onClick = onNavigateToSignUp) {
             Text(
                 text = "Don't have an account? Sign Up",
-                color = WarmCoral
+                color = SoothingBlue
             )
         }
     }

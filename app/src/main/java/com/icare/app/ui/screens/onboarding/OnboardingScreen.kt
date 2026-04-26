@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.icare.app.ui.theme.DarkCharcoal
 import com.icare.app.ui.theme.MediumGrey
-import com.icare.app.ui.theme.WarmCoral
+import com.icare.app.ui.theme.SoothingBlue
 import com.icare.app.ui.theme.WarmWhite
 
 data class OnboardingPage(
@@ -140,7 +140,7 @@ fun OnboardingScreen(
                         .size(if (index == currentPage) 12.dp else 8.dp)
                         .clip(CircleShape)
                         .background(
-                            if (index == currentPage) WarmCoral else MediumGrey.copy(alpha = 0.4f)
+                            if (index == currentPage) SoothingBlue else MediumGrey.copy(alpha = 0.4f)
                         )
                 )
             }
@@ -158,7 +158,7 @@ fun OnboardingScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = WarmCoral)
+            colors = ButtonDefaults.buttonColors(containerColor = SoothingBlue)
         ) {
             Text(
                 text = if (currentPage < pages.size - 1) "Next" else "Get Started",

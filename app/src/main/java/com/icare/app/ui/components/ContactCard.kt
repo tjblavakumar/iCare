@@ -41,7 +41,7 @@ import com.icare.app.ui.theme.ClickableBlue
 import com.icare.app.ui.theme.HappyGreen
 import com.icare.app.ui.theme.InactiveGrey
 import com.icare.app.ui.theme.LowAmber
-import com.icare.app.ui.theme.SoftTeal
+import com.icare.app.ui.theme.SoftSky
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -147,7 +147,7 @@ fun ContactCard(
                     Icon(
                         imageVector = Icons.Default.Call,
                         contentDescription = "Call",
-                        tint = SoftTeal
+                        tint = SoftSky
                     )
                 }
 
@@ -155,7 +155,7 @@ fun ContactCard(
                     Icon(
                         imageVector = Icons.Default.Sms,
                         contentDescription = "Text",
-                        tint = SoftTeal
+                        tint = SoftSky
                     )
                 }
             }

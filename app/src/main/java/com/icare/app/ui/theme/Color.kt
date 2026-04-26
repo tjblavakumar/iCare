@@ -16,11 +16,17 @@ val SoftSkyDark = Color(0xFF5FAFD7)
 val ClickableBlue = Color(0xFF1E6BB8)
 
 // Legacy aliases for compatibility
+@Deprecated("Use SoothingBlue instead", ReplaceWith("SoothingBlue"))
 val WarmCoral = SoothingBlue
+@Deprecated("Use SoothingBlueLight instead", ReplaceWith("SoothingBlueLight"))
 val WarmCoralLight = SoothingBlueLight
+@Deprecated("Use SoothingBlueDark instead", ReplaceWith("SoothingBlueDark"))
 val WarmCoralDark = SoothingBlueDark
+@Deprecated("Use SoftSky instead", ReplaceWith("SoftSky"))
 val SoftTeal = SoftSky
+@Deprecated("Use SoftSkyLight instead", ReplaceWith("SoftSkyLight"))
 val SoftTealLight = SoftSkyLight
+@Deprecated("Use SoftSkyDark instead", ReplaceWith("SoftSkyDark"))
 val SoftTealDark = SoftSkyDark
 
 // Status colors

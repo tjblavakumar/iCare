@@ -49,7 +49,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.icare.app.R
-import com.icare.app.ui.theme.WarmCoral
+import com.icare.app.ui.theme.SoothingBlue
 import kotlinx.coroutines.launch
 
 @Composable
@@ -133,7 +133,7 @@ fun SignUpScreen(
         Text(
             text = "iCare",
             style = MaterialTheme.typography.displayLarge,
-            color = WarmCoral,
+            color = SoothingBlue,
             fontWeight = FontWeight.Bold
         )
 
@@ -254,7 +254,7 @@ fun SignUpScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = WarmCoral)
+            colors = ButtonDefaults.buttonColors(containerColor = SoothingBlue)
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(
@@ -271,7 +271,7 @@ fun SignUpScreen(
         TextButton(onClick = onNavigateToLogin) {
             Text(
                 text = "Already have an account? Log In",
-                color = WarmCoral
+                color = SoothingBlue
             )
         }
     }

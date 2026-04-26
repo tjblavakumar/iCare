@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.PersonAdd
@@ -31,14 +30,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -55,11 +51,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.icare.app.ui.components.CompactScreenHeader
 import com.icare.app.ui.theme.CardTextSecondary
-import com.icare.app.ui.theme.SoftTeal
-import com.icare.app.ui.theme.WarmCoral
+import com.icare.app.ui.theme.SoftSky
+import com.icare.app.ui.theme.SoothingBlue
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddContactScreen(
     onBack: () -> Unit,
@@ -92,18 +88,9 @@ fun AddContactScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = { Text("Add Contact", color = Color.White) },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = WarmCoral)
+        CompactScreenHeader(
+            title = "Add Contact",
+            onBack = onBack
         )
 
         Column(modifier = Modifier.padding(16.dp)) {
@@ -132,7 +119,7 @@ fun AddContactScreen(
                 Button(
                     onClick = { viewModel.searchContact(searchQuery) },
                     enabled = searchQuery.isNotBlank() && !state.isSearching,
-                    colors = ButtonDefaults.buttonColors(containerColor = WarmCoral)
+                    colors = ButtonDefaults.buttonColors(containerColor = SoothingBlue)
                 ) {
                     Text("Search")
                 }
@@ -151,7 +138,7 @@ fun AddContactScreen(
                 onClick = onDiscoverClick,
                 enabled = !state.isDiscovering,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = SoftTeal)
+                colors = ButtonDefaults.buttonColors(containerColor = SoftSky)
             ) {
                 if (state.isDiscovering) {
                     CircularProgressIndicator(
@@ -178,7 +165,7 @@ fun AddContactScreen(
                 Text(
                     text = state.message!!,
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (state.message!!.contains("found") || state.message == "Request sent!") SoftTeal else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (state.message!!.contains("found") || state.message == "Request sent!") SoftSky else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -190,7 +177,7 @@ fun AddContactScreen(
                         .padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = WarmCoral)
+                    CircularProgressIndicator(color = SoothingBlue)
                 }
             }
 
@@ -231,7 +218,7 @@ fun AddContactScreen(
                                     Text(
                                         text = user.iCareId,
                                         fontSize = 12.sp,
-                                        color = WarmCoral
+                                        color = SoothingBlue
                                     )
                                 }
                             }
@@ -243,7 +230,7 @@ fun AddContactScreen(
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = "Request Sent",
-                                    tint = SoftTeal,
+                                    tint = SoftSky,
                                     modifier = Modifier.size(28.dp)
                                 )
                             } else {
@@ -253,7 +240,7 @@ fun AddContactScreen(
                                     Icon(
                                         imageVector = Icons.Default.PersonAdd,
                                         contentDescription = "Send Request",
-                                        tint = WarmCoral,
+                                        tint = SoothingBlue,
                                         modifier = Modifier.size(28.dp)
                                     )
                                 }

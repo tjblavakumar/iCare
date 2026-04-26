@@ -47,7 +47,6 @@ import com.icare.app.ui.theme.CardTextPrimary
 import com.icare.app.ui.theme.CardTextSecondary
 import com.icare.app.ui.theme.LowAmber
 import com.icare.app.ui.theme.SoothingBlue
-import com.icare.app.ui.theme.WarmCoral
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -101,7 +100,7 @@ fun NotificationsScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = WarmCoral)
+                    CircularProgressIndicator(color = SoothingBlue)
                 }
             }
 
@@ -176,7 +175,7 @@ private fun NotificationCard(
                     modifier = Modifier
                         .size(10.dp)
                         .clip(CircleShape)
-                        .background(if (isAccountDeleted) BadRed else WarmCoral)
+                        .background(if (isAccountDeleted) BadRed else SoothingBlue)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }

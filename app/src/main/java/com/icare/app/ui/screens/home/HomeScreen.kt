@@ -45,7 +45,7 @@ import com.icare.app.ui.theme.BadRed
 import com.icare.app.ui.theme.HappyGreen
 import com.icare.app.ui.theme.LowAmber
 import com.icare.app.ui.theme.MediumGrey
-import com.icare.app.ui.theme.WarmCoral
+import com.icare.app.ui.theme.SoothingBlue
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -129,7 +129,7 @@ fun HomeScreen(
         TextButton(onClick = { viewModel.toggleMoreEmojis() }) {
             Text(
                 text = if (uiState.showMoreEmojis) "Show Less" else "+ More",
-                color = WarmCoral,
+                color = SoothingBlue,
                 style = MaterialTheme.typography.labelLarge
             )
         }

@@ -22,25 +22,23 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.icare.app.ui.components.CompactScreenHeader
 import com.icare.app.ui.components.ContactCard
 import com.icare.app.ui.components.EditNicknameDialog
 import com.icare.app.ui.theme.SoothingBlue
-import com.icare.app.ui.theme.WarmCoral
 
 @Composable
 fun CircleScreen(
@@ -61,20 +59,10 @@ fun CircleScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Compact header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "My Circle",
-                color = Color.White,
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Row {
+        CompactScreenHeader(
+            title = "My Circle",
+            useActionTightEndPadding = true,
+            actions = {
                 IconButton(onClick = onAddContactClick) {
                     Icon(
                         imageVector = Icons.Default.PersonAdd,
@@ -90,9 +78,7 @@ fun CircleScreen(
                     )
                 }
             }
-        }
-        
-        HorizontalDivider(color = SoothingBlue.copy(alpha = 0.3f))
+        )
 
         when {
             uiState.isLoading -> {
@@ -100,7 +86,7 @@ fun CircleScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = WarmCoral)
+                    CircularProgressIndicator(color = SoothingBlue)
                 }
             }
 

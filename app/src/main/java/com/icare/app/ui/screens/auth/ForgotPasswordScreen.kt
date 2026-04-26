@@ -41,7 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.icare.app.ui.theme.WarmCoral
+import com.icare.app.ui.theme.SoothingBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,7 +91,7 @@ fun ForgotPasswordScreen(
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = "Success",
-                        tint = WarmCoral,
+                        tint = SoothingBlue,
                         modifier = Modifier.size(64.dp)
                     )
 
@@ -100,7 +100,7 @@ fun ForgotPasswordScreen(
                     Text(
                         text = "Passcode Reset!",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = WarmCoral
+                        color = SoothingBlue
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -121,7 +121,7 @@ fun ForgotPasswordScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = WarmCoral)
+                        colors = ButtonDefaults.buttonColors(containerColor = SoothingBlue)
                     ) {
                         Text("Back to Login", fontSize = 16.sp)
                     }
@@ -203,7 +203,7 @@ fun ForgotPasswordScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = WarmCoral)
+                        colors = ButtonDefaults.buttonColors(containerColor = SoothingBlue)
                     ) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
@@ -229,7 +229,7 @@ fun ForgotPasswordScreen(
                             onClick = { viewModel.resendResetOtp() },
                             enabled = !uiState.isLoading
                         ) {
-                            Text("Resend", color = WarmCoral)
+                            Text("Resend", color = SoothingBlue)
                         }
                     }
                 }
@@ -289,7 +289,7 @@ fun ForgotPasswordScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = WarmCoral)
+                        colors = ButtonDefaults.buttonColors(containerColor = SoothingBlue)
                     ) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
