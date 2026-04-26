@@ -22,7 +22,7 @@ iCare is a simple Android app that lets your loved ones know how you're feeling 
 - Onboarding walkthrough
 - Account deletion (Play Store compliant)
 - **Google Sign-In** for quick, passwordless authentication
-- **Password reset** via Firebase (email-based)
+- **Password reset** via email OTP (Firebase)
 
 ## Tech Stack
 
